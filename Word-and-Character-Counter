@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Word and Character Counter</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+    <style>
+        #text-input {
+            width: 100%;
+            min-height: 200px;
+            /* Adjust the height as needed */
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            resize: none;
+            /* Prevent resizing */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <div class="counter-container">
+            <h2><span id="word-count">0</span> words <span id="char-count">0</span> characters</h2>
+            <p>Average word length: <span id="avg-word-length">0</span></p>
+
+            <textarea id="text-input" class="form-control" placeholder="Type here..."></textarea>
+            <button onclick="clearText()" class="btn btn-primary mt-2">Clear Text</button>
+            <button onclick="transformText('titlecase')" class="btn btn-primary mt-2 ml-2">Title Case</button>
+            <button onclick="transformText('sentencecase')" class="btn btn-primary mt-2 ml-2">Sentence Case</button>
+            <button onclick="transformText('lowercase')" class="btn btn-primary mt-2 ml-2">Lowercase</button>
+            <button onclick="transformText('firstletter')" class="btn btn-primary mt-2 ml-2">First Letter</button>
+            <button onclick="transformText('altcase')" class="btn btn-primary mt-2 ml-2">AlT CaSe</button>
+            <button onclick="transformText('togglecase')" class="btn btn-primary mt-2 ml-2">tOGGLE</button>
+            <button onclick="transformText('uppercase')" class="btn btn-primary mt-2 ml-2">UPPERCASE</button>
+            <button onclick="transformText('camelcase')" class="btn btn-primary mt-2 ml-2">camelCase</button>
+            <button onclick="transformText('snakecase')" class="btn btn-primary mt-2 ml-2">snake_case</button>
+            <button onclick="transformText('kebabcase')" class="btn btn-primary mt-2 ml-2">kebab-case</button>
+
+
+            <button onclick="backToPrevious()" class="btn btn-primary mt-2 ml-2">Back</button>
+            <!-- Rest of your transformation buttons -->
+
+
+
+
+            <!-- Add more transformation buttons -->
+            <button onclick="countWords()" class="btn btn-primary mt-2 ml-2">Count Words</button>
+            <button onclick="generateLoremIpsum()" class="btn btn-primary mt-2 ml-2">Lorem Ipsum</button>
+
+
+
+
+            <!-- Add more transformation buttons -->
+            <button onclick="addLineNumbers()" class="btn btn-primary mt-2 ml-2">Add Line Numbers</button>
+            <button onclick="toMorseCode()" class="btn btn-primary mt-2 ml-2">To Morse Code</button>
+            <!-- Rest of your transformation buttons -->
+
+
+
+            <button onclick="saveTextToFile()" class="btn btn-primary mt-2 ml-2">Save as .txt</button>
+        </div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('text-input');
+        const wordCount = document.getElementById('word-count');
+        const charCount = document.getElementById('char-count');
+        const avgWordLength = document.getElementById('avg-word-length');
+
+        let previousText = ''; // Store previous text
+
+        textInput.addEventListener('input', updateCounters);
+
+
+
+        function updateCounters() {
+            const text = textInput.value.trim();
+            const words = text.split(/\s+/).filter((word) => word.length > 0);
+            const charLength = text.length;
+            const charWithoutSpaces = text.replace(/\s/g, '').length;
+            const avgLength = words.length > 0 ? charWithoutSpaces / words.length : 0;
+
+            wordCount.textContent = words.length;
+            charCount.textContent = charLength;
+            avgWordLength.textContent = avgLength.toFixed(2); // Round to 2 decimal places
+        }
+
+        function clearText() {
+            textInput.value = '';
+            updateCounters(); // Update counters after clearing text
+
+        }
+
+        function transformText(type) {
+
+            // Store the current text before transformation
+            previousText = textInput.value;
+
+            const text = textInput.value;
+            switch (type) {
+                case 'titlecase':
+                    textInput.value = text.toLowerCase().replace(/(^|\s)\S/g, function (a) { return a.toUpperCase(); });
+                    break;
+                case 'sentencecase':
+                    textInput.value = text.toLowerCase().replace(/(^\w|\.\s*\w)/g, function (a) { return a.toUpperCase(); });
+                    break;
+                case 'lowercase':
+                    textInput.value = text.toLowerCase();
+                    break;
+                case 'firstletter':
+                    textInput.value = text.toLowerCase().replace(/(^\w)/, function (a) { return a.toUpperCase(); });
+                    break;
+                case 'altcase':
+                    textInput.value = text.split('').map((c, i) => i % 2 === 0 ? c.toUpperCase() : c.toLowerCase()).join('');
+                    break;
+                case 'togglecase':
+                    textInput.value = text.split('').map(c => c === c.toLowerCase() ? c.toUpperCase() : c.toLowerCase()).join('');
+                    break;
+                case 'uppercase':
+                    textInput.value = text.toUpperCase();
+                    break;
+                case 'camelcase':
+                    textInput.value = text.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase());
+                    break;
+                case 'snakecase':
+                    textInput.value = text.toLowerCase().replace(/\s+/g, '_');
+                    break;
+                case 'kebabcase':
+                    textInput.value = text.toLowerCase().replace(/\s+/g, '-');
+                    break;
+                default:
+                    break;
+            }
+            updateCounters(); // Update counters after transforming text
+        }
+
+        function backToPrevious() {
+            // Set the text area value to the previous stored text
+            textInput.value = previousText;
+            updateCounters(); // Update counters after going back
+        }
+
+        function countWords() {
+            const text = textInput.value.trim();
+            const words = text.split(/\s+/).filter((word) => word.length > 0);
+            const wordOccurrences = {};
+            words.forEach((word) => {
+                wordOccurrences[word] = (wordOccurrences[word] || 0) + 1;
+            });
+            let wordCountString = '';
+            for (const word in wordOccurrences) {
+                wordCountString += `${word}: ${wordOccurrences[word]} times\n`;
+            }
+            textInput.value = wordCountString;
+        }
+
+        function generateLoremIpsum() {
+            // Sample lorem ipsum text for demonstration purposes
+            const loremIpsumText = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.`;
+            textInput.value = loremIpsumText;
+            updateCounters();
+        }
+
+
+
+        function addLineNumbers() {
+            const text = textInput.value;
+            const lines = text.split('\n');
+            const numberedLines = lines.map((line, index) => `${index + 1}: ${line}`);
+            textInput.value = numberedLines.join('\n');
+            updateCounters();
+        }
+
+        function toMorseCode() {
+            const morseCodes = {
+                'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.',
+                'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---',
+                'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---',
+                'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-',
+                'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--', 'Z': '--..',
+                '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', '5': '.....',
+                '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+                '.': '.-.-.-', ',': '--..--', '?': '..--..', '\'': '.----.', '!': '-.-.--',
+                '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...',
+                ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-',
+                '\"': '.-..-.', '$': '...-..-', '@': '.--.-.', ' ': '/'
+            };
+
+            const text = textInput.value.toUpperCase();
+            let morseCode = '';
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (morseCodes.hasOwnProperty(char)) {
+                    morseCode += morseCodes[char] + ' ';
+                } else {
+                    morseCode += '/';
+                }
+            }
+            textInput.value = morseCode.trim();
+            updateCounters();
+        }
+
+
+        function saveTextToFile() {
+            const textToSave = textInput.value;
+            const blob = new Blob([textToSave], { type: 'text/plain' });
+
+            const a = document.createElement('a');
+            a.download = 'text_file.txt';
+            a.href = window.URL.createObjectURL(blob);
+            a.style.display = 'none';
+            document.body.appendChild(a);
+
+            a.click();
+
+            document.body.removeChild(a);
+        }
+
+    </script>
+</body>
+
+</html>
