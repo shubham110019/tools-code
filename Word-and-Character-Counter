@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>Word and Character Counter</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/textarea-autogrow@3.0.0/dist/textarea-autogrow.min.js"></script>
+
 
 
     <style>
@@ -25,11 +27,32 @@
 <body>
     <div class="container mt-5">
         <div class="counter-container">
-            <h2><span id="word-count">0</span> words <span id="char-count">0</span> characters</h2>
-            <p>Average word length: <span id="avg-word-length">0</span></p>
 
-            <textarea id="text-input" class="form-control" placeholder="Type here..."></textarea>
-            <button onclick="clearText()" class="btn btn-primary mt-2">Clear Text</button>
+            <div class="row">
+
+
+                <div class="col-md-12">
+                    <h2><span id="word-count">0</span> words <span id="char-count">0</span> characters</h2>
+                    <p>Average word length: <span id="avg-word-length">0</span></p>
+                </div>
+
+
+
+            </div>
+
+
+            <textarea id="text-input" class="form-control mb-4" placeholder="Type here..."></textarea>
+
+            <div class="row">
+
+                <div class="col-md-12 mb-2">
+                    <button onclick="clearText()" class="btn btn-danger mt-2">Clear Text</button>
+
+                    <button onclick="saveTextToFile()" class="btn btn-success mt-2 ml-2">Save as .txt</button>
+                </div>
+
+            </div>
+
             <button onclick="transformText('titlecase')" class="btn btn-primary mt-2 ml-2">Title Case</button>
             <button onclick="transformText('sentencecase')" class="btn btn-primary mt-2 ml-2">Sentence Case</button>
             <button onclick="transformText('lowercase')" class="btn btn-primary mt-2 ml-2">Lowercase</button>
@@ -42,27 +65,13 @@
             <button onclick="transformText('kebabcase')" class="btn btn-primary mt-2 ml-2">kebab-case</button>
 
 
-            <button onclick="backToPrevious()" class="btn btn-primary mt-2 ml-2">Back</button>
-            <!-- Rest of your transformation buttons -->
-
-
-
-
-            <!-- Add more transformation buttons -->
+            <!-- <button onclick="backToPrevious()" class="btn btn-primary mt-2 ml-2">Back</button> -->
             <button onclick="countWords()" class="btn btn-primary mt-2 ml-2">Count Words</button>
             <button onclick="generateLoremIpsum()" class="btn btn-primary mt-2 ml-2">Lorem Ipsum</button>
-
-
-
-
-            <!-- Add more transformation buttons -->
             <button onclick="addLineNumbers()" class="btn btn-primary mt-2 ml-2">Add Line Numbers</button>
             <button onclick="toMorseCode()" class="btn btn-primary mt-2 ml-2">To Morse Code</button>
-            <!-- Rest of your transformation buttons -->
 
 
-
-            <button onclick="saveTextToFile()" class="btn btn-primary mt-2 ml-2">Save as .txt</button>
         </div>
     </div>
 
@@ -72,11 +81,10 @@
         const charCount = document.getElementById('char-count');
         const avgWordLength = document.getElementById('avg-word-length');
 
-        let previousText = ''; // Store previous text
+        let previousText = '';
 
         textInput.addEventListener('input', updateCounters);
-
-
+        textareaAutogrow(textInput);
 
         function updateCounters() {
             const text = textInput.value.trim();
@@ -87,18 +95,16 @@
 
             wordCount.textContent = words.length;
             charCount.textContent = charLength;
-            avgWordLength.textContent = avgLength.toFixed(2); // Round to 2 decimal places
+            avgWordLength.textContent = avgLength.toFixed(2);
         }
 
         function clearText() {
             textInput.value = '';
-            updateCounters(); // Update counters after clearing text
+            updateCounters();
 
         }
 
         function transformText(type) {
-
-            // Store the current text before transformation
             previousText = textInput.value;
 
             const text = textInput.value;
@@ -136,13 +142,12 @@
                 default:
                     break;
             }
-            updateCounters(); // Update counters after transforming text
+            updateCounters();
         }
 
         function backToPrevious() {
-            // Set the text area value to the previous stored text
             textInput.value = previousText;
-            updateCounters(); // Update counters after going back
+            updateCounters();
         }
 
         function countWords() {
@@ -160,7 +165,6 @@
         }
 
         function generateLoremIpsum() {
-            // Sample lorem ipsum text for demonstration purposes
             const loremIpsumText = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.`;
             textInput.value = loremIpsumText;
             updateCounters();
@@ -211,7 +215,7 @@
             const blob = new Blob([textToSave], { type: 'text/plain' });
 
             const a = document.createElement('a');
-            a.download = 'text_file.txt';
+            a.download = 'imgtype_text.txt';
             a.href = window.URL.createObjectURL(blob);
             a.style.display = 'none';
             document.body.appendChild(a);
@@ -220,6 +224,7 @@
 
             document.body.removeChild(a);
         }
+
 
     </script>
 </body>
