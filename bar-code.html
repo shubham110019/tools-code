@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>jQuery ClassyQR plugin | Class.PM</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript"
+        src="https://imgtype.com/wp-content/themes/generatepress/assets/js/jquery.classyqr.js"></script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <section>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="inputType">Select Data Type:</label>
+                            <select class="form-control" id="inputType">
+                                <option value="text">Text</option>
+                                <option value="number">Number</option>
+                                <option value="url">URL</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputData">Enter Data:</label>
+                            <input type="text" class="form-control" id="inputData" placeholder="Enter data for QR code">
+                        </div>
+                        <button id="generateBtn" class="btn btn-primary btn-block">Generate QR Code</button>
+                        <button id="clearBtn" class="btn btn-secondary btn-block mt-2">Clear</button>
+                        <div class="qrcode mt-4" id="qr1"></div>
+                        <a id="downloadLink" class="btn btn-success btn-block mt-3" download="QRCode.png"
+                            style="display: none;">Download QR
+                            Code</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery('#generateBtn').click(function () {
+                var inputType = jQuery('#inputType').val();
+                var inputData = jQuery('#inputData').val();
+                jQuery('#qr1').empty();
+
+                var qrOptions = {
+                    create: true,
+                    text: inputData,
+                    callback: function (imageSrc) {
+                        console.log('QR code image loaded with source:', imageSrc);
+                        jQuery('#downloadLink').attr('href', imageSrc).css('display', 'block');
+                    }
+                };
+
+                switch (inputType) {
+                    case 'number':
+                        qrOptions.type = 'text'; // Change the type to 'text' for number input
+                        qrOptions.text = Number(inputData).toString(); // Convert to string for QR code
+                        break;
+                    case 'url':
+                        qrOptions.type = 'url';
+                        break;
+                    case 'text':
+                    default:
+                        qrOptions.type = 'text';
+                        break;
+                }
+
+                jQuery('#qr1').ClassyQR(qrOptions);
+            });
+
+            jQuery('#clearBtn').click(function () {
+                jQuery('#qr1').empty();
+                jQuery('#downloadLink').css('display', 'none');
+                jQuery('#inputData').val('');
+            });
+
+            jQuery('#downloadLink').click(function (event) {
+                event.preventDefault();
+                var downloadUrl = jQuery(this).attr('href');
+                var downloadFileName = jQuery(this).attr('download');
+                var link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = downloadFileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        });
+    </script>
+</body>
+
+</html>
