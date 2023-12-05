@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Multi File Upload & Download</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Multi File Upload & Download</h1>
+        <input type="file" id="fileInput" multiple onchange="showFiles()">
+        <button onclick="generateZip()" class="btn btn-primary" style="display: none;">Create ZIP</button>
+        <div id="fileList"></div>
+        <div id="downloadLinkContainer"></div>
+        <div class="spinner-border text-primary" role="status" id="loader" style="display: none;">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div id="zipSize"></div>
+        <div id="errorMessage" class="text-danger" style="display: none;"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script>
+        let filesInZip = []; // To keep track of files added to ZIP
+        let tableCreated = false; // To track if the table has been created
+
+        function showFiles() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                return;
+            }
+
+            if (!tableCreated) {
+                createTable(); // Create the table only once
+                tableCreated = true;
+            }
+
+            const tbody = document.getElementById('fileListBody');
+            tbody.innerHTML = ''; // Clear previous table content
+
+            filesInZip = []; // Reset filesInZip array
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+
+                let fileName = file.name;
+                let fileExtension = '';
+
+                // Split file name and extension
+                const lastDotIndex = fileName.lastIndexOf('.');
+                if (lastDotIndex !== -1) {
+                    fileName = file.name.substring(0, lastDotIndex);
+                    fileExtension = file.name.substring(lastDotIndex);
+                }
+
+                let uniqueFileName = fileName;
+                let count = 1;
+
+                // Check if the file name already exists
+                while (filesInZip.some(existingFile => existingFile.uniqueFileName === uniqueFileName + fileExtension)) {
+                    uniqueFileName = fileName + `_${count}`;
+                    count++;
+                }
+
+                // Concatenate the unique file name and extension
+                uniqueFileName += fileExtension;
+
+                // Create an object with the file and its unique name
+                const fileObject = { file, uniqueFileName };
+
+                const row = document.createElement('tr');
+
+                const cellName = document.createElement('td');
+                cellName.textContent = uniqueFileName; // Use the unique file name
+                row.appendChild(cellName);
+
+                const cellSize = document.createElement('td');
+                cellSize.textContent = formatFileSize(file.size);
+                row.appendChild(cellSize);
+
+                const cellRemove = document.createElement('td');
+                const removeLink = document.createElement('a');
+                removeLink.href = '#';
+                removeLink.textContent = 'Remove';
+                removeLink.onclick = function () {
+                    const indexToRemove = filesInZip.findIndex(obj => obj.uniqueFileName === uniqueFileName);
+                    if (indexToRemove !== -1) {
+                        filesInZip.splice(indexToRemove, 1);
+                        row.remove();
+                        generateZip(); // Auto-generate new ZIP after removal
+                    }
+                };
+                cellRemove.appendChild(removeLink);
+                row.appendChild(cellRemove);
+
+                tbody.appendChild(row);
+                filesInZip.push(fileObject); // Add file object to filesInZip array
+            }
+
+            generateZip(); // Auto-generate new ZIP after addition
+        }
+
+        function createTable() {
+            const fileList = document.getElementById('fileList');
+
+            const table = document.createElement('table');
+            table.classList.add('table', 'table-bordered', 'mt-3');
+
+            const thead = document.createElement('thead');
+            const headRow = document.createElement('tr');
+
+            const headerFileName = document.createElement('th');
+            headerFileName.textContent = 'File Name';
+            const headerFileSize = document.createElement('th');
+            headerFileSize.textContent = 'File Size';
+            const headerAction = document.createElement('th');
+            headerAction.textContent = 'Action';
+
+            headRow.appendChild(headerFileName);
+            headRow.appendChild(headerFileSize);
+            headRow.appendChild(headerAction);
+
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            tbody.id = 'fileListBody'; // Set tbody id for future use
+
+            table.appendChild(tbody);
+            fileList.appendChild(table);
+        }
+
+        function formatFileSize(size) {
+            if (size < 1024) {
+                return size + ' B';
+            } else if (size >= 1024 && size < 1048576) {
+                return (size / 1024).toFixed(2) + ' KB';
+            } else if (size >= 1048576 && size < 1073741824) {
+                return (size / 1048576).toFixed(2) + ' MB';
+            } else if (size >= 1073741824 && size < 1099511627776) {
+                return (size / 1073741824).toFixed(2) + ' GB';
+            } else {
+                return (size / 1099511627776).toFixed(2) + ' TB';
+            }
+        }
+
+        function generateZip() {
+            const zip = new JSZip();
+
+            for (let i = 0; i < filesInZip.length; i++) {
+                const { file, uniqueFileName } = filesInZip[i];
+
+                // Check if file already exists in zip
+                let fileNameInZip = uniqueFileName;
+                let count = 1;
+                while (zip.file(fileNameInZip)) {
+                    const lastDotIndex = uniqueFileName.lastIndexOf('.');
+                    const fileName = lastDotIndex !== -1 ? uniqueFileName.substring(0, lastDotIndex) : uniqueFileName;
+                    const fileExtension = lastDotIndex !== -1 ? uniqueFileName.substring(lastDotIndex) : '';
+                    fileNameInZip = `${fileName}_${count}${fileExtension}`;
+                    count++;
+                }
+
+                zip.file(fileNameInZip, file);
+            }
+
+            zip.generateAsync({ type: 'blob' }).then(function (content) {
+                const loader = document.getElementById('loader');
+                loader.style.display = 'none'; // Hide loader after zip generation
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(content);
+                downloadLink.download = 'filetype_zip.zip';
+                downloadLink.textContent = 'Click here to download the ZIP file';
+
+                const downloadLinkContainer = document.getElementById('downloadLinkContainer');
+                downloadLinkContainer.innerHTML = ''; // Clear previous links
+                downloadLinkContainer.appendChild(downloadLink);
+
+                const zipSize = document.getElementById('zipSize');
+                const sizeInBytes = content.size;
+                const formattedSize = formatFileSize(sizeInBytes);
+                zipSize.textContent = `ZIP File Size: ${formattedSize}`;
+            }).catch(function (error) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Error generating ZIP file. Please try again.';
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
