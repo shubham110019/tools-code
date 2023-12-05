@@ -3,13 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Multi Image Upload & Download</title>
+    <title>Multi File Upload & Download</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
     <div class="container">
-        <h1>Multi Image Upload & Download</h1>
+        <h1>Multi File Upload & Download</h1>
         <input type="file" id="fileInput" multiple>
         <button onclick="createZip()" class="btn btn-primary">Create ZIP</button>
         <div id="fileList"></div>
@@ -24,6 +24,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script>
+        let filesInZip = []; // To keep track of files added to ZIP
+        let tableCreated = false; // To track if the table has been created
+
         function createZip() {
             const fileInput = document.getElementById('fileInput');
             const files = fileInput.files;
@@ -33,29 +36,19 @@
                 return;
             }
 
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = ''; // Clear previous file list
+            if (!tableCreated) {
+                createTable(); // Create the table only once
+                tableCreated = true;
+            }
 
-            // Display the list of files in a table
-            const table = document.createElement('table');
-            table.classList.add('table', 'table-bordered', 'mt-3');
-            const thead = document.createElement('thead');
-            const tbody = document.createElement('tbody');
+            const tbody = document.getElementById('fileListBody');
 
-            const headRow = document.createElement('tr');
-            const headerFileName = document.createElement('th');
-            headerFileName.textContent = 'File Name';
-            const headerFileSize = document.createElement('th');
-            headerFileSize.textContent = 'File Size';
-            headRow.appendChild(headerFileName);
-            headRow.appendChild(headerFileSize);
-
-            thead.appendChild(headRow);
-            table.appendChild(thead);
-            table.appendChild(tbody);
+            const loader = document.getElementById('loader');
+            loader.style.display = 'inline-block'; // Show loader while generating zip
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
+
                 const row = document.createElement('tr');
 
                 const cellName = document.createElement('td');
@@ -67,70 +60,103 @@
                 row.appendChild(cellSize);
 
                 if (file.type.startsWith('image/')) {
-                    const cellImg = document.createElement('td');
+                    const cellImage = document.createElement('td');
                     const img = document.createElement('img');
                     img.src = URL.createObjectURL(file);
                     img.style.maxWidth = '100px'; // Adjust image width if needed
-                    cellImg.appendChild(img);
-                    row.appendChild(cellImg);
+                    img.alt = file.name;
+                    cellImage.appendChild(img);
+                    row.appendChild(cellImage);
+                } else {
+                    const cellEmpty = document.createElement('td');
+                    row.appendChild(cellEmpty);
                 }
 
                 tbody.appendChild(row);
-            }
-
-            fileList.appendChild(table);
-
-            const loader = document.getElementById('loader');
-            loader.style.display = 'inline-block'; // Show loader while generating zip
-
-            const zip = new JSZip();
-            const totalFiles = files.length;
-
-            function formatFileSize(size) {
-                if (size < 1024) {
-                    return size + ' B';
-                } else if (size >= 1024 && size < 1048576) {
-                    return (size / 1024).toFixed(2) + ' KB';
-                } else if (size >= 1048576 && size < 1073741824) {
-                    return (size / 1048576).toFixed(2) + ' MB';
-                } else if (size >= 1073741824 && size < 1099511627776) {
-                    return (size / 1073741824).toFixed(2) + ' GB';
-                } else {
-                    return (size / 1099511627776).toFixed(2) + ' TB';
-                }
-            }
-
-            function generateZip() {
-                for (let i = 0; i < totalFiles; i++) {
-                    const file = files[i];
-                    zip.file(file.name, file);
-                }
-
-                zip.generateAsync({ type: 'blob' }).then(function (content) {
-                    loader.style.display = 'none'; // Hide loader after zip generation
-
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = URL.createObjectURL(content);
-                    downloadLink.download = 'imgtype_zip.zip';
-                    downloadLink.textContent = 'Click here to download the ZIP file';
-
-                    const downloadLinkContainer = document.getElementById('downloadLinkContainer');
-                    downloadLinkContainer.innerHTML = ''; // Clear previous links
-                    downloadLinkContainer.appendChild(downloadLink);
-
-                    const zipSize = document.getElementById('zipSize');
-                    const sizeInBytes = content.size;
-                    const formattedSize = formatFileSize(sizeInBytes);
-                    zipSize.textContent = `ZIP File Size: ${formattedSize}`;
-                }).catch(function (error) {
-                    const errorMessage = document.getElementById('errorMessage');
-                    errorMessage.style.display = 'block';
-                    errorMessage.textContent = 'Error generating ZIP file. Please try again.';
-                    loader.style.display = 'none';
-                });
+                filesInZip.push(file); // Add file to filesInZip array if not already included
             }
 
             generateZip();
+        }
+
+        function createTable() {
+            const fileList = document.getElementById('fileList');
+
+            const table = document.createElement('table');
+            table.classList.add('table', 'table-bordered', 'mt-3');
+
+            const thead = document.createElement('thead');
+            const headRow = document.createElement('tr');
+
+            const headerFileName = document.createElement('th');
+            headerFileName.textContent = 'File Name';
+            const headerFileSize = document.createElement('th');
+            headerFileSize.textContent = 'File Size';
+            const headerImage = document.createElement('th');
+            headerImage.textContent = 'Image Preview';
+
+            headRow.appendChild(headerFileName);
+            headRow.appendChild(headerFileSize);
+            headRow.appendChild(headerImage);
+
+            thead.appendChild(headRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            tbody.id = 'fileListBody'; // Set tbody id for future use
+
+            table.appendChild(tbody);
+            fileList.appendChild(table);
+        }
+
+        function formatFileSize(size) {
+            if (size < 1024) {
+                return size + ' B';
+            } else if (size >= 1024 && size < 1048576) {
+                return (size / 1024).toFixed(2) + ' KB';
+            } else if (size >= 1048576 && size < 1073741824) {
+                return (size / 1048576).toFixed(2) + ' MB';
+            } else if (size >= 1073741824 && size < 1099511627776) {
+                return (size / 1073741824).toFixed(2) + ' GB';
+            } else {
+                return (size / 1099511627776).toFixed(2) + ' TB';
+            }
+        }
+
+        function generateZip() {
+            const zip = new JSZip();
+
+            for (let i = 0; i < filesInZip.length; i++) {
+                const file = filesInZip[i];
+                zip.file(file.name, file);
+            }
+
+            zip.generateAsync({ type: 'blob' }).then(function (content) {
+                const loader = document.getElementById('loader');
+                loader.style.display = 'none'; // Hide loader after zip generation
+
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(content);
+                downloadLink.download = 'filetype_zip.zip';
+                downloadLink.textContent = 'Click here to download the ZIP file';
+
+                const downloadLinkContainer = document.getElementById('downloadLinkContainer');
+                downloadLinkContainer.innerHTML = ''; // Clear previous links
+                downloadLinkContainer.appendChild(downloadLink);
+
+                const zipSize = document.getElementById('zipSize');
+                const sizeInBytes = content.size;
+                const formattedSize = formatFileSize(sizeInBytes);
+                zipSize.textContent = `ZIP File Size: ${formattedSize}`;
+            }).catch(function (error) {
+                const errorMessage = document.getElementById('errorMessage');
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Error generating ZIP file. Please try again.';
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.style.display = 'none';
+                }
+            });
         }
     </script>
 </body>
