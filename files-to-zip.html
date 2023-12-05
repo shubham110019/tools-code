@@ -49,10 +49,35 @@
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
 
+                let fileName = file.name;
+                let fileExtension = '';
+
+                // Split file name and extension
+                const lastDotIndex = fileName.lastIndexOf('.');
+                if (lastDotIndex !== -1) {
+                    fileName = file.name.substring(0, lastDotIndex);
+                    fileExtension = file.name.substring(lastDotIndex);
+                }
+
+                let uniqueFileName = fileName;
+                let count = 1;
+
+                // Check if the file name already exists
+                while (filesInZip.some(existingFile => existingFile.name === uniqueFileName + fileExtension)) {
+                    uniqueFileName = fileName + `_${count}`;
+                    count++;
+                }
+
+                // Concatenate the unique file name and extension
+                uniqueFileName += fileExtension;
+
+                // Create an object with the file and its unique name
+                const fileObject = { file, uniqueFileName };
+
                 const row = document.createElement('tr');
 
                 const cellName = document.createElement('td');
-                cellName.textContent = file.name;
+                cellName.textContent = uniqueFileName; // Use the unique file name
                 row.appendChild(cellName);
 
                 const cellSize = document.createElement('td');
@@ -64,7 +89,7 @@
                     const img = document.createElement('img');
                     img.src = URL.createObjectURL(file);
                     img.style.maxWidth = '100px'; // Adjust image width if needed
-                    img.alt = file.name;
+                    img.alt = uniqueFileName; // Use the unique file name
                     cellImage.appendChild(img);
                     row.appendChild(cellImage);
                 } else {
@@ -73,7 +98,7 @@
                 }
 
                 tbody.appendChild(row);
-                filesInZip.push(file); // Add file to filesInZip array if not already included
+                filesInZip.push(fileObject); // Add file object to filesInZip array
             }
 
             generateZip();
@@ -127,8 +152,20 @@
             const zip = new JSZip();
 
             for (let i = 0; i < filesInZip.length; i++) {
-                const file = filesInZip[i];
-                zip.file(file.name, file);
+                const { file, uniqueFileName } = filesInZip[i];
+
+                // Check if file already exists in zip
+                let fileNameInZip = uniqueFileName;
+                let count = 1;
+                while (zip.file(fileNameInZip)) {
+                    const lastDotIndex = uniqueFileName.lastIndexOf('.');
+                    const fileName = lastDotIndex !== -1 ? uniqueFileName.substring(0, lastDotIndex) : uniqueFileName;
+                    const fileExtension = lastDotIndex !== -1 ? uniqueFileName.substring(lastDotIndex) : '';
+                    fileNameInZip = `${fileName}_${count}${fileExtension}`;
+                    count++;
+                }
+
+                zip.file(fileNameInZip, file);
             }
 
             zip.generateAsync({ type: 'blob' }).then(function (content) {
