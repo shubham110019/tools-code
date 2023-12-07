@@ -7,10 +7,42 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         #preview {
-            max-width: 300px;
-            margin-top: 20px;
+            max-width: 100%;
+            max-height: 100%;
             image-orientation: from-image;
             /* Prevents browser from rotating the image */
+            transition: transform 0.3s ease;
+            /* Smooth transition for rotation */
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            /* Ensures the whole image is visible */
+            margin: 0 auto;
+            display: block;
+        }
+
+        .btn-group {
+            margin-top: 10px;
+        }
+
+        .imgbox {
+            border: 1px solid #000;
+            max-width: 300px;
+            padding: 10px;
+            overflow: hidden;
+            /* Ensure the image doesn't overflow */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Additional styles to ensure correct sizing */
+            height: auto;
+            min-height: 100px;
+            /* Set minimum height for the box */
+        }
+
+        .imgbox img {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
@@ -19,23 +51,41 @@
     <div class="container">
         <h1>Image Rotate and Download</h1>
         <input type="file" id="fileInput" accept="image/*">
-        <div>
-            <button class="btn btn-primary mt-3" id="rotateButton">Rotate 90° Clockwise</button>
-            <button class="btn btn-success mt-3" id="downloadButton" disabled>Download Rotated Image</button>
+        <div class="btn-group">
+            <button class="btn btn-primary" id="rotateLeftButton">Rotate 90° Left</button>
+            <button class="btn btn-primary" id="rotateRightButton">Rotate 90° Right</button>
+            <button class="btn btn-success" id="downloadButton" disabled>Download Rotated Image</button>
         </div>
-        <img id="preview" src="" alt="Preview">
+        <div class="imgbox">
+            <img id="preview" src="" alt="Preview">
+        </div>
     </div>
 
     <script>
-        document.getElementById('fileInput').addEventListener('change', function (event) {
+        const fileInput = document.getElementById('fileInput');
+        const rotateLeftButton = document.getElementById('rotateLeftButton');
+        const rotateRightButton = document.getElementById('rotateRightButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const previewImage = document.getElementById('preview');
+        let canvasWidth = 0;
+        let canvasHeight = 0;
+
+        fileInput.addEventListener('change', function (event) {
             const file = event.target.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
 
             reader.onload = function (event) {
                 const img = new Image();
                 img.onload = function () {
-                    document.getElementById('preview').src = img.src;
-                    document.getElementById('rotateButton').removeAttribute('disabled');
+                    resetRotation();
+                    previewImage.src = img.src;
+                    rotateLeftButton.removeAttribute('disabled');
+                    rotateRightButton.removeAttribute('disabled');
+                    downloadButton.removeAttribute('disabled');
+                    canvasWidth = img.width;
+                    canvasHeight = img.height;
                 };
                 img.src = event.target.result;
             };
@@ -44,33 +94,65 @@
         });
 
         function rotateImage(angle) {
-            const img = document.getElementById('preview');
-            let currentRotation = img.getAttribute('data-rotation') || 0;
+            let currentRotation = previewImage.getAttribute('data-rotation') || 0;
             currentRotation = (parseInt(currentRotation) + angle) % 360;
-            img.style.transform = `rotate(${currentRotation}deg)`;
-            img.setAttribute('data-rotation', currentRotation);
-            document.getElementById('downloadButton').removeAttribute('disabled');
+            previewImage.style.transform = `rotate(${currentRotation}deg)`;
+            previewImage.setAttribute('data-rotation', currentRotation);
+            adjustImageBoxDimensions(); // Adjust dimensions after rotation
+            if (angle === 90 || angle === -90) {
+                [canvasWidth, canvasHeight] = [canvasHeight, canvasWidth]; // Swap canvas dimensions after rotation
+            }
         }
 
-        document.getElementById('rotateButton').addEventListener('click', function () {
+        function resetRotation() {
+            previewImage.style.transform = 'rotate(0deg)';
+            previewImage.removeAttribute('data-rotation');
+            adjustImageBoxDimensions(); // Adjust dimensions after resetting rotation
+            canvasWidth = 0;
+            canvasHeight = 0;
+        }
+
+        function adjustImageBoxDimensions() {
+            const img = document.getElementById('preview');
+            const container = document.querySelector('.imgbox');
+
+            if (img.offsetWidth > img.offsetHeight) {
+                container.style.height = 'auto';
+            } else {
+                container.style.height = '100%';
+            }
+        }
+
+        rotateLeftButton.addEventListener('click', function () {
+            rotateImage(-90);
+        });
+
+        rotateRightButton.addEventListener('click', function () {
             rotateImage(90);
         });
 
-        document.getElementById('downloadButton').addEventListener('click', function () {
+        downloadButton.addEventListener('click', function () {
             const img = document.getElementById('preview');
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
+
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
             ctx.translate(canvas.width / 2, canvas.height / 2);
             ctx.rotate(parseInt(img.getAttribute('data-rotation')) * Math.PI / 180);
             ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+
             const link = document.createElement('a');
             link.href = canvas.toDataURL();
             link.download = 'rotated_image.png';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
+            // Reset preview to display the full image without rotation
+            // resetRotation();
+            previewImage.src = img.src;
         });
     </script>
 </body>
