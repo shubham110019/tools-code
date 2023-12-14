@@ -39,6 +39,10 @@
       <button type="button" class="btn btn-primary" onclick="generateMailto()">Generate Mailto</button>
 
       <div id="emailbox"></div>
+
+
+      <button id="copyButton" type="button" class="btn btn-secondary" onclick="copyToClipboard()">Copy</button>
+      <span id="copyMessage" style="display:none;">Copied!</span>
     </form>
   </div>
 
@@ -74,6 +78,28 @@
       }
 
       document.getElementById('emailbox').innerText = mailtoLink;
+    }
+
+
+
+      function copyToClipboard() {
+      const emailbox = document.getElementById('emailbox');
+      const mailtoText = emailbox.innerText;
+
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = mailtoText;
+      document.body.appendChild(tempTextArea);
+
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+
+      const copyButton = document.getElementById('copyButton');
+      copyButton.innerText = 'Copied!';
+
+      setTimeout(function () {
+        copyButton.innerText = 'Copy';
+      }, 1500);
     }
   </script>
 </body>
