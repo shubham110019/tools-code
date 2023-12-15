@@ -20,12 +20,26 @@
             padding: 7px 12px !important;
         }
 
-        .emilbxgird .mail-tab .bg-white {
+        .emilbxgird .mail-tab .doh {
             width: 10px;
             height: 10px;
             margin-right: 5px;
             border-radius: 20px;
         }
+
+        .emilbxgird .mail-tab .doh:first-child {
+            background: #FF605C !important;
+        }
+
+        .emilbxgird .mail-tab .doh:nth-child(2) {
+            background: #FFBD44 !important;
+        }
+
+        .emilbxgird .mail-tab .doh:nth-child(3) {
+            background: #00CA4E !important;
+        }
+
+
 
         .emilbxfrm .emilbxfrm-bx {
             display: flex;
@@ -47,8 +61,19 @@
             border: none !important;
         }
 
-        .emilbxfrm .emilbxfrm-bx input:focus-visible {
+        .emilbxfrm .emilbxfrm-bx input:focus-visible,
+        .emilbxfrm .emilbxfrm-bx textarea:focus-visible {
             outline: unset !important
+        }
+
+        .emilbxfrm .emilbxfrm-bx.textareabox {
+            display: block !important;
+        }
+
+        .emilbxfrm .emilbxfrm-bx.textareabox textarea {
+            border: none !important;
+            padding: 10px 0px !important;
+            resize: none;
         }
     </style>
 </head>
@@ -71,9 +96,9 @@
             <div class="col-md-10 mx-auto">
                 <div class="emilbxgird">
                     <div class="bg-sec mail-tab">
-                        <div class="bg-white"></div>
-                        <div class="bg-white"></div>
-                        <div class="bg-white"></div>
+                        <div class="doh"></div>
+                        <div class="doh"></div>
+                        <div class="doh"></div>
 
                     </div>
 
@@ -105,20 +130,35 @@
                                     placeholder="Write the subject line you want to see">
                             </div>
 
-                            <div class="form-group">
-                                <label for="bodyTextarea">Body:</label>
-                                <textarea class="form-control" id="bodyTextarea" rows="5"
-                                    placeholder="Enter body"></textarea>
+                            <div class="emilbxfrm-bx textareabox">
+                                <span class="label">Body:</span>
+                                <textarea id="bodyTextarea" rows="5"
+                                    placeholder="Write email content you want to get"></textarea>
                             </div>
+
+
                             <button type="button" class="btn btn-primary" onclick="generateMailto()">Generate
                                 Mailto</button>
 
-                            <div id="emailbox"></div>
 
 
-                            <button id="copyButton" type="button" class="btn btn-secondary"
-                                onclick="copyToClipboard()">Copy</button>
-                            <span id="copyMessage" style="display:none;">Copied!</span>
+                            <div class="reultbox mt-32">
+                                <h4>Mailto link</h4>
+
+                                <div class="">
+                                    <textarea id="emailbox" rows="5"></textarea>
+
+                                    <button id="copyButton" type="button" class="btn btn-secondary"
+                                        onclick="copyToClipboard()">Copy</button>
+
+
+                                </div>
+
+                            </div>
+
+
+
+                        </form>
 
 
                     </div>
@@ -167,7 +207,7 @@
         }
         function copyToClipboard() {
             const emailbox = document.getElementById('emailbox');
-            const mailtoText = emailbox.innerText;
+            const mailtoText = emailbox.value; // Use .value instead of .innerText
 
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = mailtoText;
