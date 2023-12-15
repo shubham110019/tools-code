@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Email Form</title>
+    <link rel='stylesheet' id='custom-style-css'
+        href='https://imgtype.com/wp-content/themes/generatepress/css/main.css?ver=3.5' media='all' />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Add custom styles here */
+        body {
+            margin: 20px;
+        }
+
+        .emilbxgird .mail-tab {
+            background: #0a083b !important;
+            width: 100% !important;
+            display: flex !important;
+            padding: 7px 12px !important;
+        }
+
+        .emilbxgird .mail-tab .bg-white {
+            width: 10px;
+            height: 10px;
+            margin-right: 5px;
+            border-radius: 20px;
+        }
+
+        .emilbxfrm .emilbxfrm-bx {
+            display: flex;
+            padding: 12px 16px !important;
+            background: #FFF !important;
+            align-items: center !important;
+            border-bottom: 1px solid #e6e6e6;
+        }
+
+        .emilbxfrm .emilbxfrm-bx span.label {
+            color: #0a083b;
+            font-weight: 600;
+            margin-right: 6px !important;
+        }
+
+        .emilbxfrm .emilbxfrm-bx input {
+            width: 100% !important;
+            padding: 8px !important;
+            border: none !important;
+        }
+
+        .emilbxfrm .emilbxfrm-bx input:focus-visible {
+            outline: unset !important
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-104">
+
+        <div class="row mb-64">
+            <div class="col-md-12 text-center">
+                <h1 class="text-center">Mailto Link Generator</h1>
+                <p class="gt mb-0">Create mailto links with subject, body, bcc and cc.</p>
+
+            </div>
+        </div>
+
+
+        <div class="row">
+
+            <div class="col-md-10 mx-auto">
+                <div class="emilbxgird">
+                    <div class="bg-sec mail-tab">
+                        <div class="bg-white"></div>
+                        <div class="bg-white"></div>
+                        <div class="bg-white"></div>
+
+                    </div>
+
+
+                    <div class="emilbxfrm">
+                        <form id="emailForm">
+
+                            <div class="emilbxfrm-bx">
+                                <span class="label">To:</span>
+
+                                <input type="email" id="emailInput" placeholder="Type your email address">
+                            </div>
+
+
+                            <div class="emilbxfrm-bx">
+                                <span class="label">Cc:</span>
+                                <input type="email" id="ccInput" placeholder="Type your coworker email address">
+                            </div>
+
+                            <div class="emilbxfrm-bx">
+                                <span class="label">Bcc:</span>
+                                <input type="email" id="bccInput" placeholder="Type your coworker email address">
+                            </div>
+
+
+                            <div class="emilbxfrm-bx">
+                                <span class="label">Subject:</span>
+                                <input type="text" id="subjectInput"
+                                    placeholder="Write the subject line you want to see">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bodyTextarea">Body:</label>
+                                <textarea class="form-control" id="bodyTextarea" rows="5"
+                                    placeholder="Enter body"></textarea>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="generateMailto()">Generate
+                                Mailto</button>
+
+                            <div id="emailbox"></div>
+
+
+                            <button id="copyButton" type="button" class="btn btn-secondary"
+                                onclick="copyToClipboard()">Copy</button>
+                            <span id="copyMessage" style="display:none;">Copied!</span>
+
+
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function generateMailto() {
+            const email = document.getElementById('emailInput').value;
+            const cc = document.getElementById('ccInput').value;
+            const bcc = document.getElementById('bccInput').value;
+            const subject = document.getElementById('subjectInput').value;
+            const body = document.getElementById('bodyTextarea').value;
+
+            let mailtoLink = `mailto:${email}`;
+
+            if (cc.trim() !== '') {
+                mailtoLink += `?cc=${cc}`;
+            }
+
+            if (bcc.trim() !== '') {
+                if (mailtoLink.includes('?')) {
+                    mailtoLink += `&bcc=${bcc}`;
+                } else {
+                    mailtoLink += `?bcc=${bcc}`;
+                }
+            }
+
+            if (cc.trim() === '' && bcc.trim() === '') {
+                mailtoLink += `?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            } else {
+                mailtoLink += `&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            }
+
+            document.getElementById('emailbox').innerText = mailtoLink;
+        }
+        function copyToClipboard() {
+            const emailbox = document.getElementById('emailbox');
+            const mailtoText = emailbox.innerText;
+
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = mailtoText;
+            document.body.appendChild(tempTextArea);
+
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyButton = document.getElementById('copyButton');
+            copyButton.innerText = 'Copied!';
+
+            setTimeout(function () {
+                copyButton.innerText = 'Copy';
+            }, 1500);
+        }
+    </script>
+</body>
+
+</html>
