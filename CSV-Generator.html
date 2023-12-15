@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CSV Generator</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        tr#headerRow th {
+            background: #eaecee !important;
+        }
+
+        tbody tr td:first-child {
+            width: 60px;
+            background: #eaecee !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>CSV Generator</h1>
+        <div id="gridContainer">
+            <table id="dataTable" class="table table-bordered">
+                <thead>
+                    <tr id="headerRow"></tr>
+                </thead>
+                <tbody>
+                    <!-- Table body will be populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+        <button id="addRowBtn" class="btn btn-success mr-2">Add Row</button>
+        <button id="addColumnBtn" class="btn btn-success">Add Column</button>
+        <button id="generateBtn" class="btn btn-primary mt-3">Generate CSV</button>
+        <a href="#" id="downloadLink" style="display: none;">Download CSV</a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let rows = 3; // Initial number of rows
+            let cols = 3; // Initial number of columns
+
+            function generateHeaders() {
+                let headerRow = $('#headerRow');
+                headerRow.empty();
+                headerRow.append('<th></th>'); // Empty corner cell
+
+                // Generate alphabet headers (A, B, C, ...)
+                for (let i = 0; i < cols; i++) {
+                    let columnHeader = String.fromCharCode(65 + i); // ASCII code for A is 65
+                    headerRow.append(`<th>${columnHeader}</th>`);
+                }
+            }
+
+            // Function to generate the grid
+            function generateGrid() {
+                let tableContent = '';
+                for (let i = 0; i < rows; i++) {
+                    tableContent += '<tr>';
+                    for (let j = 0; j <= cols; j++) {
+                        if (j === 0) {
+                            tableContent += `<td>${i + 1}</td>`; // Numeric row headers (1, 2, 3, ...)
+                        } else {
+                            tableContent += `<td contenteditable="true"></td>`;
+                        }
+                    }
+                    tableContent += '</tr>';
+                }
+                $('#dataTable tbody').html(tableContent);
+                generateHeaders();
+            }
+
+            generateGrid(); // Generate the initial grid
+
+            // Function to add a row
+            $('#addRowBtn').on('click', function () {
+                rows++;
+                generateGrid();
+            });
+
+            // Function to add a column
+            $('#addColumnBtn').on('click', function () {
+                cols++;
+                generateGrid();
+            });
+
+            $('#generateBtn').on('click', function () {
+                let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
+
+                $('#dataTable tr').each(function (index, element) {
+                    if (index !== 0) { // Exclude the first row (headers)
+                        let row = $(element);
+                        row.find('td').each(function (index, element) {
+                            if (index !== 0) { // Exclude the first column (row numbers)
+                                csvContent += $(element).text().trim();
+                                if (index !== row.find('td').length - 1) {
+                                    csvContent += ',';
+                                } else {
+                                    csvContent += '\n';
+                                }
+                            }
+                        });
+                    }
+                });
+
+                let encodedUri = encodeURI(csvContent);
+                $('#downloadLink').attr({
+                    'href': encodedUri,
+                    'download': 'generated.csv'
+                }).show();
+            });
+        });
+
+
+    </script>
+</body>
+
+</html>
