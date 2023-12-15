@@ -126,16 +126,16 @@
                         row.find('td').each(function (index, element) {
                             if (index !== 0) { // Exclude the first column (row numbers)
                                 let cellContent = $(element).text().trim();
-                                if (cellContent !== '') {
-                                    hasContent = true; // Set flag to true if cell has content
-                                    rowContent += cellContent + ',';
-                                }
+                                // if (cellContent !== '') {
+                                hasContent = true; // Set flag to true if cell has content
+                                rowContent += cellContent + ',';
+                                // }
                             }
                         });
-                        if (rowContent !== '') {
-                            rowContent = rowContent.slice(0, -1); // Remove the trailing comma
-                            csvContent += rowContent + '\n'; // Add row to CSV content
-                        }
+                        // if (rowContent !== '') {
+                        rowContent = rowContent.slice(0, -1); // Remove the trailing comma
+                        csvContent += rowContent + '\n'; // Add row to CSV content
+                        // }
                     }
                 });
 
