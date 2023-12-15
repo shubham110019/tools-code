@@ -8,7 +8,6 @@
         href='https://imgtype.com/wp-content/themes/generatepress/css/main.css?ver=3.5' media='all' />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        /* Add custom styles here */
         body {
             margin: 20px;
         }
@@ -25,6 +24,7 @@
             height: 10px;
             margin-right: 5px;
             border-radius: 20px;
+            cursor: pointer;
         }
 
         .emilbxgird .mail-tab .doh:first-child {
@@ -62,7 +62,8 @@
         }
 
         .emilbxfrm .emilbxfrm-bx input:focus-visible,
-        .emilbxfrm .emilbxfrm-bx textarea:focus-visible {
+        .emilbxfrm .emilbxfrm-bx textarea:focus-visible,
+        .reultbox .reultbox-f1 textarea:focus-visible {
             outline: unset !important
         }
 
@@ -70,10 +71,130 @@
             display: block !important;
         }
 
-        .emilbxfrm .emilbxfrm-bx.textareabox textarea {
+        .emilbxfrm .emilbxfrm-bx.textareabox textarea,
+        .reultbox .reultbox-f1 textarea {
             border: none !important;
             padding: 10px 0px !important;
             resize: none;
+        }
+
+        .reultbox h4 {
+            font-size: 16px !important;
+            margin-bottom: 0px !important;
+        }
+
+        .reultbox .reultbox-f1 {
+            border: 1px solid #e6e6e6;
+            background: #FFF !important;
+            display: flex !important;
+            padding: 12px 16px !important;
+            align-items: center !important;
+
+        }
+
+        .btn.focus,
+        .btn:focus {
+            outline: 0;
+            box-shadow: unset !important;
+        }
+
+        .btn-reset {
+            background: transparent !important;
+            border: 0 !important;
+            color: #7e7f8f !important;
+            font-size: 14px !important;
+            margin-bottom: 4px !important;
+        }
+
+        button:focus {
+            outline: 0 !important;
+        }
+
+
+        button.btn-copy {
+            background: transparent !important;
+            color: #0a083b !important;
+            font-size: 16px !important;
+            padding: 8px 20px !important;
+            font-weight: 500;
+            border: 2px solid #0a083b;
+        }
+
+        .emilbxfrm-bx .btn-group .btn.btn-outline {
+            border: 1px solid #0a083b !important;
+            font-size: 14px !important;
+            line-height: 24px !important;
+            padding: 6px 14px !important;
+            font-weight: 600 !important;
+        }
+
+        .ermbox {
+            border-left: 1px solid #e6e6e6;
+            border-right: 1px solid #e6e6e6;
+        }
+
+        .reultbox-f1 .reultbox-f1bx {
+            width: 80%;
+        }
+
+        .reultbox-f1 .reultbox-f1bz {
+            width: 20%;
+            text-align: right;
+
+        }
+
+
+        @media (max-width: 991.98px) {
+
+            .emilbxfrm-bx .btn-group .btn.btn-outline {
+                font-size: 12px !important;
+                line-height: 24px !important;
+                padding: 2px 8px !important;
+                margin: 0px 4px !important;
+            }
+
+            .emilbxfrm .emilbxfrm-bx input {}
+
+
+        }
+
+        @media (max-width: 767.98px) {
+
+            .emilbxfrm .emilbxfrm-bx.textareabox textarea,
+            .reultbox .reultbox-f1 textarea {
+                max-height: 100px !important;
+                padding-right: 12px !important;
+            }
+
+
+            .reultbox-f1 .reultbox-f1bz {
+                padding: 0px 6px !important;
+            }
+
+            button.btn-copy {
+                color: #0a083b !important;
+                font-size: 14px !important;
+                padding: 5px 5px !important;
+            }
+
+        }
+
+        @media (max-width: 575.98px) {
+
+            .reultbox .reultbox-f1 {
+                display: block !important;
+            }
+
+            .reultbox-f1 .reultbox-f1bx {
+                width: 100% !important;
+                margin-bottom: 8px !important;
+            }
+
+            .reultbox-f1 .reultbox-f1bz {
+                padding: 0px 0px !important;
+            }
+
+
         }
     </style>
 </head>
@@ -95,10 +216,14 @@
 
             <div class="col-md-10 mx-auto">
                 <div class="emilbxgird">
+
+                    <div class="text-right">
+                        <button id="resetButton" type="button" class="btn-reset" onclick="resetForm()">Reset</button>
+                    </div>
                     <div class="bg-sec mail-tab">
-                        <div class="doh"></div>
-                        <div class="doh"></div>
-                        <div class="doh"></div>
+                        <div class="doh" onclick="resetForm()"></div>
+                        <div class="doh" onclick="resetForm()"></div>
+                        <div class="doh" onclick="resetForm()"></div>
 
                     </div>
 
@@ -106,50 +231,86 @@
                     <div class="emilbxfrm">
                         <form id="emailForm">
 
-                            <div class="emilbxfrm-bx">
-                                <span class="label">To:</span>
 
-                                <input type="email" id="emailInput" placeholder="Type your email address">
+                            <div class="ermbox">
+
+                                <div class="emilbxfrm-bx">
+                                    <span class="label">To:</span>
+
+                                    <input type="email" id="emailInput" placeholder="Type your email address">
+
+                                    <div class="btn-group">
+                                        <button class="btn btn-outline" type="button"
+                                            onclick="toggleCcInput(this);">Cc:</button>
+                                        <button class="btn btn-outline" type="button"
+                                            onclick="toggleBccInput(this);">Bcc:</button>
+                                    </div>
+                                </div>
+
+
+                                <div class="emilbxfrm-bx d-none" id="ccInputTab">
+                                    <span class="label">Cc:</span>
+                                    <input type="email" id="ccInput" placeholder="Type your coworker email address">
+                                </div>
+
+                                <div class="emilbxfrm-bx d-none" id="bccInputTab">
+                                    <span class="label">Bcc:</span>
+                                    <input type="email" id="bccInput" placeholder="Type your coworker email address">
+                                </div>
+
+
+                                <div class="emilbxfrm-bx">
+                                    <span class="label">Subject:</span>
+                                    <input type="text" id="subjectInput"
+                                        placeholder="Write the subject line you want to see">
+                                </div>
+
+                                <div class="emilbxfrm-bx textareabox">
+                                    <span class="label">Body:</span>
+                                    <textarea id="bodyTextarea" rows="5"
+                                        placeholder="Write email content you want to get"></textarea>
+                                </div>
+
+
                             </div>
 
-
-                            <div class="emilbxfrm-bx">
-                                <span class="label">Cc:</span>
-                                <input type="email" id="ccInput" placeholder="Type your coworker email address">
-                            </div>
-
-                            <div class="emilbxfrm-bx">
-                                <span class="label">Bcc:</span>
-                                <input type="email" id="bccInput" placeholder="Type your coworker email address">
-                            </div>
-
-
-                            <div class="emilbxfrm-bx">
-                                <span class="label">Subject:</span>
-                                <input type="text" id="subjectInput"
-                                    placeholder="Write the subject line you want to see">
-                            </div>
-
-                            <div class="emilbxfrm-bx textareabox">
-                                <span class="label">Body:</span>
-                                <textarea id="bodyTextarea" rows="5"
-                                    placeholder="Write email content you want to get"></textarea>
-                            </div>
-
-
-                            <button type="button" class="btn btn-primary" onclick="generateMailto()">Generate
-                                Mailto</button>
 
 
 
                             <div class="reultbox mt-32">
                                 <h4>Mailto link</h4>
 
-                                <div class="">
-                                    <textarea id="emailbox" rows="5"></textarea>
+                                <div class="reultbox-f1">
 
-                                    <button id="copyButton" type="button" class="btn btn-secondary"
-                                        onclick="copyToClipboard()">Copy</button>
+                                    <div class="reultbox-f1bx">
+                                        <textarea id="emailbox" rows="5" readonly></textarea>
+                                    </div>
+
+                                    <div class="reultbox-f1bz">
+                                        <button id="copyButton" type="button" class="btn btn-copy"
+                                            onclick="copyToClipboard('copyButton')">Copy</button>
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+
+
+
+                            <div class="reultbox mt-32">
+                                <h4>HTML code</h4>
+
+                                <div class="reultbox-f1">
+
+                                    <div class="reultbox-f1bx">
+                                        <textarea id="emailboxhtml" rows="5" readonly></textarea>
+                                    </div>
+
+                                    <div class="reultbox-f1bz">
+                                        <button id="copyButtonHtml" type="button" class="btn btn-copy"
+                                            onclick="copyToClipboard('copyButtonHtml')">Copy</button>
+                                    </div>
 
 
                                 </div>
@@ -176,38 +337,52 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        function generateMailto() {
+        function updateMailtoLink() {
             const email = document.getElementById('emailInput').value;
             const cc = document.getElementById('ccInput').value;
             const bcc = document.getElementById('bccInput').value;
             const subject = document.getElementById('subjectInput').value;
             const body = document.getElementById('bodyTextarea').value;
 
-            let mailtoLink = `mailto:${email}`;
+            let mailtoLink = `mailto:${email}?`;
 
             if (cc.trim() !== '') {
-                mailtoLink += `?cc=${cc}`;
+                mailtoLink += `cc=${cc}`;
             }
 
             if (bcc.trim() !== '') {
-                if (mailtoLink.includes('?')) {
+                if (mailtoLink.includes('cc')) {
                     mailtoLink += `&bcc=${bcc}`;
                 } else {
-                    mailtoLink += `?bcc=${bcc}`;
+                    mailtoLink += `bcc=${bcc}`;
                 }
             }
 
-            if (cc.trim() === '' && bcc.trim() === '') {
-                mailtoLink += `?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            } else {
-                mailtoLink += `&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            if (subject.trim() !== '') {
+                if (cc.trim() === '' && bcc.trim() === '') {
+                    mailtoLink += `subject=${encodeURIComponent(subject)}`;
+                } else {
+                    mailtoLink += `&subject=${encodeURIComponent(subject)}`;
+                }
             }
 
-            document.getElementById('emailbox').innerText = mailtoLink;
+            if (body.trim() !== '') {
+                if (cc.trim() === '' && bcc.trim() === '' && subject.trim() === '') {
+                    mailtoLink += `body=${encodeURIComponent(body)}`;
+                } else {
+                    mailtoLink += `&body=${encodeURIComponent(body)}`;
+                }
+            }
+
+            document.getElementById('emailbox').value = mailtoLink;
+
+            document.getElementById('emailboxhtml').value = '<a href="' + mailtoLink + '">link text</a>';
+
         }
-        function copyToClipboard() {
-            const emailbox = document.getElementById('emailbox');
-            const mailtoText = emailbox.value; // Use .value instead of .innerText
+
+        function copyToClipboard(buttonId) {
+            const emailbox = document.getElementById(buttonId === 'copyButton' ? 'emailbox' : 'emailboxhtml');
+            const mailtoText = emailbox.value;
 
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = mailtoText;
@@ -217,13 +392,57 @@
             document.execCommand('copy');
             document.body.removeChild(tempTextArea);
 
-            const copyButton = document.getElementById('copyButton');
+            const copyButton = document.getElementById(buttonId);
             copyButton.innerText = 'Copied!';
+            copyButton.disabled = true;
 
             setTimeout(function () {
                 copyButton.innerText = 'Copy';
+                copyButton.disabled = false;
             }, 1500);
         }
+
+
+        function resetForm() {
+            const inputs = document.querySelectorAll('input, textarea');
+
+            inputs.forEach(input => {
+                input.value = '';
+            });
+
+            document.getElementById('emailbox').value = '';
+        }
+
+
+        function toggleCcInput(button) {
+            const ccInputTab = document.getElementById('ccInputTab');
+            const ccInput = document.getElementById('ccInput');
+            ccInputTab.classList.toggle('d-none');
+
+            if (ccInputTab.classList.contains('d-none')) {
+                ccInput.value = '';
+            }
+
+            updateMailtoLink();
+        }
+
+        function toggleBccInput(button) {
+
+            const bccInputTab = document.getElementById('bccInputTab');
+            const bccInput = document.getElementById('bccInput');
+
+            bccInputTab.classList.toggle('d-none');
+
+            if (bccInputTab.classList.contains('d-none')) {
+                bccInput.value = '';
+            }
+            updateMailtoLink();
+        }
+
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', updateMailtoLink);
+        });
     </script>
 </body>
 
