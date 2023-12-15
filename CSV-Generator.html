@@ -88,28 +88,37 @@
 
             $('#generateBtn').on('click', function () {
                 let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
+                let hasContent = false; // Flag to check if there's any content in the table
 
                 $('#dataTable tr').each(function (index, element) {
                     if (index !== 0) { // Exclude the first row (headers)
                         let row = $(element);
+                        let rowContent = '';
                         row.find('td').each(function (index, element) {
                             if (index !== 0) { // Exclude the first column (row numbers)
-                                csvContent += $(element).text().trim();
-                                if (index !== row.find('td').length - 1) {
-                                    csvContent += ',';
-                                } else {
-                                    csvContent += '\n';
+                                let cellContent = $(element).text().trim();
+                                if (cellContent !== '') {
+                                    hasContent = true; // Set flag to true if cell has content
+                                    rowContent += cellContent + ',';
                                 }
                             }
                         });
+                        if (rowContent !== '') {
+                            rowContent = rowContent.slice(0, -1); // Remove the trailing comma
+                            csvContent += rowContent + '\n'; // Add row to CSV content
+                        }
                     }
                 });
 
-                let encodedUri = encodeURI(csvContent);
-                $('#downloadLink').attr({
-                    'href': encodedUri,
-                    'download': 'generated.csv'
-                }).show();
+                if (hasContent) {
+                    let encodedUri = encodeURI(csvContent);
+                    $('#downloadLink').attr({
+                        'href': encodedUri,
+                        'download': 'generated.csv'
+                    }).show();
+                } else {
+                    $('#downloadLink').hide(); // Hide download link if there's no content
+                }
             });
         });
 
