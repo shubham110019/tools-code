@@ -60,7 +60,7 @@
             // Existing content in the table cells
             function saveGridContent() {
                 $('#dataTable tbody tr').each(function (index, row) {
-                    $(row).find('td').each(function (j, cell) {
+                    $(row).find('td:not(:first-child)').each(function (j, cell) {
                         let rowIndex = index;
                         let colIndex = j;
                         let cellValue = $(cell).text().trim();
@@ -87,6 +87,8 @@
                 let tableContent = '';
                 for (let i = 0; i < rows; i++) {
                     tableContent += '<tr>';
+                    tableContent += `<td>${i + 1}</td>`; // Display row number
+
                     for (let j = 0; j < cols; j++) {
                         let cellValue = dataGrid[i][j] !== undefined ? dataGrid[i][j] : ''; // Retain existing value or use empty string
                         tableContent += `<td contenteditable="true">${cellValue}</td>`;
