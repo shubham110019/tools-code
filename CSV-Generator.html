@@ -42,6 +42,33 @@
             let rows = 3; // Initial number of rows
             let cols = 3; // Initial number of columns
 
+            // Existing data array to retain cell values
+            let dataGrid = [];
+
+            // Function to initialize the dataGrid with empty values
+            function initializeGrid() {
+                for (let i = 0; i < rows; i++) {
+                    dataGrid[i] = [];
+                    for (let j = 0; j < cols; j++) {
+                        dataGrid[i][j] = '';
+                    }
+                }
+            }
+
+            initializeGrid(); // Initialize dataGrid with empty values
+
+            // Existing content in the table cells
+            function saveGridContent() {
+                $('#dataTable tbody tr').each(function (index, row) {
+                    $(row).find('td').each(function (j, cell) {
+                        let rowIndex = index;
+                        let colIndex = j;
+                        let cellValue = $(cell).text().trim();
+                        dataGrid[rowIndex][colIndex] = cellValue;
+                    });
+                });
+            }
+
             function generateHeaders() {
                 let headerRow = $('#headerRow');
                 headerRow.empty();
@@ -56,15 +83,13 @@
 
             // Function to generate the grid
             function generateGrid() {
+                saveGridContent();
                 let tableContent = '';
                 for (let i = 0; i < rows; i++) {
                     tableContent += '<tr>';
-                    for (let j = 0; j <= cols; j++) {
-                        if (j === 0) {
-                            tableContent += `<td>${i + 1}</td>`; // Numeric row headers (1, 2, 3, ...)
-                        } else {
-                            tableContent += `<td contenteditable="true"></td>`;
-                        }
+                    for (let j = 0; j < cols; j++) {
+                        let cellValue = dataGrid[i][j] !== undefined ? dataGrid[i][j] : ''; // Retain existing value or use empty string
+                        tableContent += `<td contenteditable="true">${cellValue}</td>`;
                     }
                     tableContent += '</tr>';
                 }
@@ -77,12 +102,14 @@
             // Function to add a row
             $('#addRowBtn').on('click', function () {
                 rows++;
+                dataGrid.push(Array(cols).fill('')); // Add an empty row to the dataGrid
                 generateGrid();
             });
 
             // Function to add a column
             $('#addColumnBtn').on('click', function () {
                 cols++;
+                dataGrid.forEach(row => row.push('')); // Add an empty column to each row in the dataGrid
                 generateGrid();
             });
 
