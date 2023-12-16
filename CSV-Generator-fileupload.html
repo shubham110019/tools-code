@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CSV Generator</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        tr#headerRow th {
+            background: #EFEFEF !important;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            border-bottom: 0 !important;
+        }
+
+        .table-responsive {
+            height: 500px !important;
+        }
+
+        tbody tr td:first-child,
+        .table-bordered th:first-child {
+            /* width: 30px; */
+            background: #eaecee !important;
+            max-width: 50px !important;
+            /* min-width: 30px !important; */
+        }
+
+        tbody tr td:first-child {
+            position: sticky;
+            left: 0;
+        }
+
+        .table-bordered td:not(:first-child),
+        .table-bordered th:not(:first-child) {
+            width: 150px !important;
+            min-width: 150px !important;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>CSV Generator</h1>
+        <div id="gridContainer">
+            <div class="table-responsive">
+                <table id="dataTable" class="table table-bordered">
+                    <thead>
+                        <tr id="headerRow"></tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table body will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <input type="file" id="fileInput" class="btn btn-info mr-2" accept=".csv">
+        <button id="uploadBtn" class="btn btn-info">Upload CSV</button>
+
+
+
+
+
+        <button id="addRowBtn" class="btn btn-success mr-2">Add Row</button>
+        <button id="addColumnBtn" class="btn btn-success">Add Column</button>
+        <button id="generateBtn" class="btn btn-primary">Dwonload CSV</button>
+        <button id="resetBtn" class="btn btn-danger mr-2">Reset Table</button>
+
+        <!-- <a href="#" id="downloadLink" style="display: none;">Download CSV</a> -->
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+
+        $('#uploadBtn').on('click', function () {
+            $('#fileInput').click(); // Trigger the file input click
+        });
+
+        // Handle file input change event
+        $('#fileInput').on('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.readAsText(file, 'UTF-8');
+                reader.onload = function (event) {
+                    const csvData = event.target.result;
+                    processData(csvData);
+                };
+            }
+        });
+
+        // Function to process uploaded CSV data
+        function processData(csvData) {
+            const rows = csvData.split('\n');
+            const headerRow = rows[0].split(',');
+
+            // Update rows and cols based on the uploaded CSV data
+            rows.length > 0 ? $('#addRowBtn').attr('disabled', true) : $('#addRowBtn').attr('disabled', false);
+            const uploadedRows = rows.length > 1 ? rows.length - 1 : rows.length;
+            const uploadedCols = headerRow.length;
+
+            // Initialize dataGrid based on uploaded data
+            dataGrid = [];
+            for (let i = 0; i < uploadedRows; i++) {
+                dataGrid[i] = [];
+                for (let j = 0; j < uploadedCols; j++) {
+                    dataGrid[i][j] = '';
+                }
+            }
+
+            let tableContent = '';
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i].split(',');
+                tableContent += '<tr>';
+                tableContent += `<td class="a${i}">${i + 1}</td>`; // Add class to the first cell of each row
+                for (let j = 0; j < row.length; j++) {
+                    const cellValue = row[j] ? row[j] : '';
+                    tableContent += `<td class="${String.fromCharCode(65 + j)}${i}" contenteditable="true">${cellValue}</td>`;
+                    if (!dataGrid[i]) {
+                        dataGrid[i] = [];
+                    }
+                    dataGrid[i][j] = cellValue;
+                }
+                tableContent += '</tr>';
+            }
+            $('#dataTable tbody').html(tableContent);
+        }
+
+
+
+
+        //         function processData(csvData) {
+        //     const rows = csvData.split('\n');
+
+        //     // Generate table body from uploaded CSV data
+        //     let tableContent = '';
+        //     for (let i = 0; i < rows.length; i++) {
+        //         const row = rows[i].split(',');
+        //         tableContent += '<tr>';
+        //         for (let j = 0; j < row.length; j++) {
+        //             const cellValue = row[j] ? row[j] : '';
+        //             tableContent += `<td>${cellValue}</td>`;
+        //         }
+        //         tableContent += '</tr>';
+        //     }
+        //     $('#dataTable tbody').html(tableContent);
+        // }
+
+        $(document).ready(function () {
+
+
+
+
+
+
+            let dataGrid = [];
+
+
+            let rows = 10; // Initial number of rows
+            let cols = 8; // Initial number of columns
+
+            // Existing data array to retain cell values
+
+
+            // Function to initialize the dataGrid with empty values
+            function initializeGrid() {
+                for (let i = 0; i < rows; i++) {
+                    dataGrid[i] = [];
+                    for (let j = 0; j < cols; j++) {
+                        dataGrid[i][j] = '';
+                    }
+                }
+            }
+
+            initializeGrid(); // Initialize dataGrid with empty values
+
+            // Existing content in the table cells
+            function saveGridContent() {
+                $('#dataTable tbody tr').each(function (index, row) {
+                    $(row).find('td:not(:first-child)').each(function (j, cell) {
+                        let rowIndex = index;
+                        let colIndex = j;
+                        let cellValue = $(cell).text().trim();
+                        dataGrid[rowIndex][colIndex] = cellValue;
+                    });
+                });
+            }
+
+            function generateHeaders() {
+                let headerRow = $('#headerRow');
+                headerRow.empty();
+                headerRow.append('<th></th>'); // Empty corner cell
+
+                // Generate alphabet headers (A, B, C, ...)
+                for (let i = 0; i < cols; i++) {
+                    let columnHeader = String.fromCharCode(65 + i); // ASCII code for A is 65
+                    headerRow.append(`<th>${columnHeader}</th>`);
+                }
+            }
+
+            function generateGrid() {
+                saveGridContent();
+                let tableContent = '';
+                for (let i = 0; i < rows; i++) {
+                    tableContent += '<tr>';
+                    tableContent += `<td class="a${i + 1}">${i + 1}</td>`; // Add class to the first cell of each row (e.g., a1, a2, ...)
+
+                    for (let j = 0; j < cols; j++) {
+                        if (dataGrid[i] && dataGrid[i][j] !== undefined) {
+                            let cellValue = dataGrid[i][j] !== undefined ? dataGrid[i][j] : ''; // Retain existing value or use empty string
+                            tableContent += `<td class="${String.fromCharCode(65 + j)}${i + 1}" contenteditable="true">${cellValue}</td>`;
+                        } else {
+                            tableContent += `<td class="${String.fromCharCode(65 + j)}${i + 1}" contenteditable="true"></td>`;
+                            if (!dataGrid[i]) {
+                                dataGrid[i] = [];
+                            }
+                            dataGrid[i][j] = ''; // Initialize newly added cell in the dataGrid
+                        }
+                    }
+
+                    // if (i === 0) {
+                    //     // Add an empty cell as a placeholder in the last column of the first row
+                    //     tableContent += `<td>&nbsp;</td>`;
+                    // }
+
+                    tableContent += '</tr>';
+                }
+                $('#dataTable tbody').html(tableContent);
+                generateHeaders();
+            }
+
+
+
+
+            generateGrid(); // Generate the initial grid
+
+            // Function to add a row
+            $('#addRowBtn').on('click', function () {
+                rows++;
+                dataGrid.push(Array(cols).fill('')); // Add an empty row to the dataGrid
+                generateGrid();
+            });
+
+            // Function to add a column
+            $('#addColumnBtn').on('click', function () {
+                cols++;
+                dataGrid.forEach(row => row.push('')); // Add an empty column to each row in the dataGrid
+                generateGrid();
+            });
+
+
+
+
+            $('#generateBtn').on('click', function () {
+                let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
+                let hasContent = false;
+                let lastUsedRow = 0;
+                let lastUsedCol = 0;
+
+                let colHasContent = {}; // Track if each column has content
+
+                $('#dataTable tr').each(function (index, element) {
+                    let row = $(element);
+                    let rowContent = '';
+
+                    if (index !== 0) { // Exclude the first row (headers)
+                        let hasRowContent = false;
+
+                        row.find('td:not(:first-child)').each(function (index, element) {
+                            let cellContent = $(element).text().trim();
+                            if (cellContent !== '') {
+                                hasContent = true;
+                                hasRowContent = true;
+                                colHasContent[index] = true; // Track columns with content
+                            }
+                            rowContent += cellContent + ',';
+                            lastUsedCol = Math.max(lastUsedCol, index);
+                        });
+
+                        if (hasRowContent) {
+                            rowContent = rowContent.slice(0, -1);
+                            csvContent += rowContent + '\n';
+                            lastUsedRow = index;
+                        }
+                    } else { // Process the last row even if empty
+                        let lastRow = $(element).find('td:not(:first-child)');
+                        lastRow.each(function (index, element) {
+                            let cellContent = $(element).text().trim();
+                            if (cellContent !== '') {
+                                colHasContent[index] = true; // Track columns with content
+                            }
+                            lastUsedCol = Math.max(lastUsedCol, index);
+                        });
+                        rowContent = lastRow.map((_, el) => $(el).text().trim()).get().join(',');
+                        csvContent += rowContent + '\n';
+                        lastUsedRow = index;
+                    }
+                });
+
+                if (hasContent) {
+                    rows = lastUsedRow;
+                    cols = lastUsedCol;
+
+                    // Filter columns without content
+                    let finalCsvContent = csvContent.split('\n').map(row => {
+                        let cells = row.split(',');
+                        return cells.filter((cell, index) => colHasContent[index]).join(',');
+                    }).join('\n');
+
+                    let encodedUri = encodeURI(finalCsvContent);
+
+                    // Create a hidden anchor tag and simulate a click to start the download
+                    let downloadLink = document.createElement('a');
+                    downloadLink.setAttribute('href', encodedUri);
+                    downloadLink.setAttribute('download', 'generated.csv');
+                    downloadLink.style.display = 'none';
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink); // Remove the anchor tag after download starts
+
+                } else {
+                    $('#downloadLink').hide();
+                }
+            });
+
+
+            function resetTable() {
+                rows = 10;
+                cols = 8;
+                dataGrid = [];
+                initializeGrid();
+                generateGrid();
+
+                $('#dataTable tbody td:not(:first-child)').text('');
+            }
+
+
+            // Attach an event listener to the reset button
+            $('#resetBtn').on('click', function () {
+                resetTable(); // Call the reset function when the button is clicked
+
+            });
+
+        });
+
+
+    </script>
+</body>
+
+</html>
