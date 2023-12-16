@@ -106,17 +106,16 @@
                 }
             }
 
-            // Function to generate the grid
             function generateGrid() {
                 saveGridContent();
                 let tableContent = '';
                 for (let i = 0; i < rows; i++) {
                     tableContent += '<tr>';
-                    tableContent += `<td>${i + 1}</td>`; // Display row number
+                    tableContent += `<td class="a${i + 1}">${i + 1}</td>`; // Add class to the first cell of each row (e.g., a1, a2, ...)
 
                     for (let j = 0; j < cols; j++) {
                         let cellValue = dataGrid[i][j] !== undefined ? dataGrid[i][j] : ''; // Retain existing value or use empty string
-                        tableContent += `<td contenteditable="true">${cellValue}</td>`;
+                        tableContent += `<td class="${String.fromCharCode(65 + j)}${i + 1}" contenteditable="true">${cellValue}</td>`;
                     }
                     tableContent += '</tr>';
                 }
@@ -149,18 +148,25 @@
                 let lastUsedRow = 0;
                 let lastUsedCol = 0;
 
+                let colHasContent = {}; // Track if each column has content
+
                 $('#dataTable tr').each(function (index, element) {
                     let row = $(element);
                     let rowContent = '';
+
+
 
                     if (index !== 0) { // Exclude the first row (headers)
                         let hasRowContent = false;
 
                         row.find('td:not(:first-child)').each(function (index, element) {
                             let cellContent = $(element).text().trim();
+
+
                             if (cellContent !== '') {
                                 hasContent = true;
                                 hasRowContent = true;
+                                colHasContent[index] = true; // Track columns with content
                             }
                             rowContent += cellContent + ',';
                             lastUsedCol = Math.max(lastUsedCol, index);
@@ -170,6 +176,9 @@
                             rowContent = rowContent.slice(0, -1);
                             csvContent += rowContent + '\n';
                             lastUsedRow = index;
+
+
+
                         }
                     }
                 });
@@ -178,10 +187,10 @@
                     rows = lastUsedRow;
                     cols = lastUsedCol;
 
-                    // Remove empty columns from the end
+                    // Filter columns without content
                     let finalCsvContent = csvContent.split('\n').map(row => {
                         let cells = row.split(',');
-                        return cells.slice(0, lastUsedCol + 1).join(',');
+                        return cells.filter((cell, index) => colHasContent[index]).join(',');
                     }).join('\n');
 
                     let encodedUri = encodeURI(finalCsvContent);
