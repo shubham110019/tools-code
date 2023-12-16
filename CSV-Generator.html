@@ -114,14 +114,31 @@
                     tableContent += `<td class="a${i + 1}">${i + 1}</td>`; // Add class to the first cell of each row (e.g., a1, a2, ...)
 
                     for (let j = 0; j < cols; j++) {
-                        let cellValue = dataGrid[i][j] !== undefined ? dataGrid[i][j] : ''; // Retain existing value or use empty string
-                        tableContent += `<td class="${String.fromCharCode(65 + j)}${i + 1}" contenteditable="true">${cellValue}</td>`;
+                        if (dataGrid[i] && dataGrid[i][j] !== undefined) {
+                            let cellValue = dataGrid[i][j] !== undefined ? dataGrid[i][j] : ''; // Retain existing value or use empty string
+                            tableContent += `<td class="${String.fromCharCode(65 + j)}${i + 1}" contenteditable="true">${cellValue}</td>`;
+                        } else {
+                            tableContent += `<td class="${String.fromCharCode(65 + j)}${i + 1}" contenteditable="true"></td>`;
+                            if (!dataGrid[i]) {
+                                dataGrid[i] = [];
+                            }
+                            dataGrid[i][j] = ''; // Initialize newly added cell in the dataGrid
+                        }
                     }
+
+                    if (i === 0) {
+                        // Add an empty cell as a placeholder in the last column of the first row
+                        tableContent += `<td>&nbsp;</td>`;
+                    }
+
                     tableContent += '</tr>';
                 }
                 $('#dataTable tbody').html(tableContent);
                 generateHeaders();
             }
+
+
+
 
             generateGrid(); // Generate the initial grid
 
@@ -154,15 +171,11 @@
                     let row = $(element);
                     let rowContent = '';
 
-
-
                     if (index !== 0) { // Exclude the first row (headers)
                         let hasRowContent = false;
 
                         row.find('td:not(:first-child)').each(function (index, element) {
                             let cellContent = $(element).text().trim();
-
-
                             if (cellContent !== '') {
                                 hasContent = true;
                                 hasRowContent = true;
@@ -176,10 +189,19 @@
                             rowContent = rowContent.slice(0, -1);
                             csvContent += rowContent + '\n';
                             lastUsedRow = index;
-
-
-
                         }
+                    } else { // Process the last row even if empty
+                        let lastRow = $(element).find('td:not(:first-child)');
+                        lastRow.each(function (index, element) {
+                            let cellContent = $(element).text().trim();
+                            if (cellContent !== '') {
+                                colHasContent[index] = true; // Track columns with content
+                            }
+                            lastUsedCol = Math.max(lastUsedCol, index);
+                        });
+                        rowContent = lastRow.map((_, el) => $(el).text().trim()).get().join(',');
+                        csvContent += rowContent + '\n';
+                        lastUsedRow = index;
                     }
                 });
 
