@@ -59,11 +59,6 @@
         <button id="addColumnBtn" class="btn btn-success">Add Column</button>
         <button id="generateBtn" class="btn btn-primary">Generate CSV</button>
         <a href="#" id="downloadLink" style="display: none;">Download CSV</a>
-
-
-
-        <button id="downloadExcelBtn" class="btn btn-info" style="display: none;">Download Excel</button>
-        <a href="#" id="downloadLinkExcel" style="display: none;">Download Excel</a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -150,38 +145,55 @@
 
             $('#generateBtn').on('click', function () {
                 let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
-                let hasContent = false; // Flag to check if there's any content in the table
+                let hasContent = false;
+                let lastUsedRow = 0;
+                let lastUsedCol = 0;
 
                 $('#dataTable tr').each(function (index, element) {
+                    let row = $(element);
+                    let rowContent = '';
+
                     if (index !== 0) { // Exclude the first row (headers)
-                        let row = $(element);
-                        let rowContent = '';
-                        row.find('td').each(function (index, element) {
-                            if (index !== 0) { // Exclude the first column (row numbers)
-                                let cellContent = $(element).text().trim();
-                                // if (cellContent !== '') {
-                                hasContent = true; // Set flag to true if cell has content
-                                rowContent += cellContent + ',';
-                                // }
+                        let hasRowContent = false;
+
+                        row.find('td:not(:first-child)').each(function (index, element) {
+                            let cellContent = $(element).text().trim();
+                            if (cellContent !== '') {
+                                hasContent = true;
+                                hasRowContent = true;
                             }
+                            rowContent += cellContent + ',';
+                            lastUsedCol = Math.max(lastUsedCol, index);
                         });
-                        // if (rowContent !== '') {
-                        rowContent = rowContent.slice(0, -1); // Remove the trailing comma
-                        csvContent += rowContent + '\n'; // Add row to CSV content
-                        // }
+
+                        if (hasRowContent) {
+                            rowContent = rowContent.slice(0, -1);
+                            csvContent += rowContent + '\n';
+                            lastUsedRow = index;
+                        }
                     }
                 });
 
                 if (hasContent) {
-                    let encodedUri = encodeURI(csvContent);
+                    rows = lastUsedRow;
+                    cols = lastUsedCol;
+
+                    // Remove empty columns from the end
+                    let finalCsvContent = csvContent.split('\n').map(row => {
+                        let cells = row.split(',');
+                        return cells.slice(0, lastUsedCol + 1).join(',');
+                    }).join('\n');
+
+                    let encodedUri = encodeURI(finalCsvContent);
                     $('#downloadLink').attr({
                         'href': encodedUri,
                         'download': 'generated.csv'
                     }).show();
                 } else {
-                    $('#downloadLink').hide(); // Hide download link if there's no content
+                    $('#downloadLink').hide();
                 }
             });
+
         });
 
 
