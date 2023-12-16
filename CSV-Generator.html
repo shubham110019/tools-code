@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        <input type="file" id="fileInput" class="btn btn-info mr-2" accept=".csv">
+        <input type="file" id="fileInput" class="btn btn-info mr-2 d-none" accept=".csv">
         <button id="uploadBtn" class="btn btn-info">Upload CSV</button>
 
 
@@ -81,8 +81,8 @@
             let dataGrid = [];
 
 
-            var rows = 5; // Initial number of rows
-            var cols = 5; // Initial number of columns
+            var rows = 10; // Initial number of rows
+            var cols = 10; // Initial number of columns
 
             // Existing data array to retain cell values
 
@@ -311,13 +311,16 @@
 
 
             function resetTable() {
-                rows = 10;
-                cols = 8;
-                dataGrid = [];
-                initializeGrid();
-                generateGrid();
+                // rows = 10;
+                // cols = 8;
+                // dataGrid = [];
+                // initializeGrid();
+                // generateGrid();
 
-                $('#dataTable tbody td:not(:first-child)').text('');
+                // $('#dataTable tbody td:not(:first-child)').text('');
+
+                location.reload();
+
             }
 
 
