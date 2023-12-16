@@ -7,7 +7,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         tr#headerRow th {
-            background: #eaecee !important;
+            background: #EFEFEF !important;
             position: sticky;
             top: 0;
             z-index: 1;
@@ -57,8 +57,10 @@
         </div>
         <button id="addRowBtn" class="btn btn-success mr-2">Add Row</button>
         <button id="addColumnBtn" class="btn btn-success">Add Column</button>
-        <button id="generateBtn" class="btn btn-primary">Generate CSV</button>
-        <a href="#" id="downloadLink" style="display: none;">Download CSV</a>
+        <button id="generateBtn" class="btn btn-primary">Dwonload CSV</button>
+        <button id="resetBtn" class="btn btn-danger mr-2">Reset Table</button>
+
+        <!-- <a href="#" id="downloadLink" style="display: none;">Download CSV</a> -->
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -126,10 +128,10 @@
                         }
                     }
 
-                    if (i === 0) {
-                        // Add an empty cell as a placeholder in the last column of the first row
-                        tableContent += `<td>&nbsp;</td>`;
-                    }
+                    // if (i === 0) {
+                    //     // Add an empty cell as a placeholder in the last column of the first row
+                    //     tableContent += `<td>&nbsp;</td>`;
+                    // }
 
                     tableContent += '</tr>';
                 }
@@ -216,13 +218,37 @@
                     }).join('\n');
 
                     let encodedUri = encodeURI(finalCsvContent);
-                    $('#downloadLink').attr({
-                        'href': encodedUri,
-                        'download': 'generated.csv'
-                    }).show();
+
+                    // Create a hidden anchor tag and simulate a click to start the download
+                    let downloadLink = document.createElement('a');
+                    downloadLink.setAttribute('href', encodedUri);
+                    downloadLink.setAttribute('download', 'generated.csv');
+                    downloadLink.style.display = 'none';
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink); // Remove the anchor tag after download starts
+
                 } else {
                     $('#downloadLink').hide();
                 }
+            });
+
+
+            function resetTable() {
+                rows = 10;
+                cols = 8;
+                dataGrid = [];
+                initializeGrid();
+                generateGrid();
+
+                $('#dataTable tbody td:not(:first-child)').text('');
+            }
+
+
+            // Attach an event listener to the reset button
+            $('#resetBtn').on('click', function () {
+                resetTable(); // Call the reset function when the button is clicked
+
             });
 
         });
