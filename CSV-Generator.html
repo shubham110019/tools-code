@@ -396,6 +396,16 @@
                 $(clonedTable).find('thead th').remove();
 
                 // Get the updated table data
+                // const wsData = XLSX.utils.table_to_sheet(clonedTable);
+
+                // wb.Sheets['Sheet1'] = wsData;
+
+
+                // Get all rows except the first one
+                const rowsExceptFirst = clonedTable.getElementsByTagName('tr');
+                rowsExceptFirst[0].remove(); // Remove the first (header) row
+
+                // Generate the Excel sheet from the updated table data
                 const wsData = XLSX.utils.table_to_sheet(clonedTable);
 
                 wb.Sheets['Sheet1'] = wsData;
@@ -411,7 +421,7 @@
 
                 const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
 
-                saveAs(blob, 'generated.xlsx');
+                saveAs(blob, 'imgtype.xlsx');
             }
 
             // SaveAs function for compatibility with different browsers
