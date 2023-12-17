@@ -36,6 +36,18 @@
             width: 150px !important;
             min-width: 150px !important;
         }
+
+        ul.gridContainer-menu {
+            display: flex;
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            margin-bottom: 14px !important;
+        }
+
+        ul.gridContainer-menu li:not(:first-child) {
+            margin-left: 8px !important;
+        }
     </style>
 
 </head>
@@ -43,40 +55,71 @@
 <body>
     <div class="container mt-5">
         <h1>CSV Generator</h1>
-        <div id="gridContainer">
-            <div class="table-responsive">
-                <table id="dataTable" class="table table-bordered">
-                    <thead>
-                        <tr id="headerRow"></tr>
-                    </thead>
-                    <tbody>
-                        <!-- Table body will be populated dynamically -->
-                    </tbody>
-                </table>
+
+
+        <div class="gridContainer-full">
+
+
+            <ul class="gridContainer-menu">
+                <li><button id="uploadBtn" class="btn btn-info">Upload CSV</button></li>
+                <li><button id="addRowBtn" class="btn btn-success">Add Row</button></li>
+                <li><button id="addColumnBtn" class="btn btn-success">Add Column</button></li>
+                <li><button id="generateBtn" class="btn btn-primary">Download CSV</button></li>
+                <li><button id="saveExcelBtn" class="btn btn-warning">Save as Excel</button></li>
+                <li><button id="resetBtn" class="btn btn-danger">Reset Table</button></li>
+
+                <!-- <li><button id="toggleFullScreen" class="btn btn-secondary">Toggle Full Screen</button></li> -->
+
+            </ul>
+
+
+            <div id="gridContainer">
+                <div class="table-responsive">
+                    <table id="dataTable" class="table table-bordered">
+                        <thead>
+                            <tr id="headerRow"></tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table body will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <input type="file" id="fileInput" class="btn btn-info mr-2 d-none" accept=".csv">
         </div>
-
-        <input type="file" id="fileInput" class="btn btn-info mr-2 d-none" accept=".csv">
-        <button id="uploadBtn" class="btn btn-info">Upload CSV</button>
-
-
-
-
-
-        <button id="addRowBtn" class="btn btn-success mr-2">Add Row</button>
-        <button id="addColumnBtn" class="btn btn-success">Add Column</button>
-        <button id="generateBtn" class="btn btn-primary">Dwonload CSV</button>
-        <button id="resetBtn" class="btn btn-danger mr-2">Reset Table</button>
 
         <!-- <a href="#" id="downloadLink" style="display: none;">Download CSV</a> -->
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
 
 
+        // document.getElementById('toggleFullScreen').addEventListener('click', function () {
+        //     const doc = document.documentElement;
+        //     if (!document.fullscreenElement) {
+        //         if (doc.requestFullscreen) {
+        //             doc.requestFullscreen();
+        //         } else if (doc.webkitRequestFullscreen) { /* Safari */
+        //             doc.webkitRequestFullscreen();
+        //         } else if (doc.msRequestFullscreen) { /* IE11 */
+        //             doc.msRequestFullscreen();
+        //         }
+        //     } else {
+        //         if (document.exitFullscreen) {
+        //             document.exitFullscreen();
+        //         } else if (document.webkitExitFullscreen) { /* Safari */
+        //             document.webkitExitFullscreen();
+        //         } else if (document.msExitFullscreen) { /* IE11 */
+        //             document.msExitFullscreen();
+        //         }
+        //     }
+        // });
 
         $(document).ready(function () {
+
 
             let dataGrid = [];
 
@@ -128,7 +171,7 @@
                 let tableContent = '';
                 for (let i = 0; i < uploadedRows; i++) {
                     const row = rowsData[i].split(',');
-                    tableContent += '<tr>';
+                    tableContent += `<tr class="row-${i}">`;
                     tableContent += `<td class="a${i}">${i + 1}</td>`; // Add class to the first cell of each row
                     for (let j = 0; j < uploadedCols; j++) {
                         const cellValue = row[j] ? row[j] : '';
@@ -138,6 +181,8 @@
                         }
                         dataGrid[i][j] = cellValue;
                     }
+
+                    // tableContent += `<td><button class="btn btn-danger delete-row">Delete</button></td>`;
                     tableContent += '</tr>';
                 }
 
@@ -172,15 +217,17 @@
                 });
             }
 
+
+
             function generateHeaders() {
                 let headerRow = $('#headerRow');
                 headerRow.empty();
-                headerRow.append('<th></th>'); // Empty corner cell
+                headerRow.append('<th class="col-no"></th>'); // Empty corner cell with class "demo"
 
-                // Generate alphabet headers (A, B, C, ...)
+                // Generate alphabet headers (A, B, C, ...) with class "demo" and "col-a"
                 for (let i = 0; i < cols; i++) {
                     let columnHeader = String.fromCharCode(65 + i); // ASCII code for A is 65
-                    headerRow.append(`<th>${columnHeader}</th>`);
+                    headerRow.append(`<th class="col-${columnHeader.toLowerCase()}">${columnHeader}</th>`);
                 }
             }
 
@@ -188,7 +235,7 @@
                 saveGridContent();
                 let tableContent = '';
                 for (let i = 0; i < rows; i++) {
-                    tableContent += '<tr>';
+                    tableContent += `<tr class="row-${i + 1}">`;
                     tableContent += `<td class="a${i + 1}">${i + 1}</td>`; // Add class to the first cell of each row (e.g., a1, a2, ...)
 
                     for (let j = 0; j < cols; j++) {
@@ -208,6 +255,7 @@
                     //     // Add an empty cell as a placeholder in the last column of the first row
                     //     tableContent += `<td>&nbsp;</td>`;
                     // }
+
 
                     tableContent += '</tr>';
                 }
@@ -311,13 +359,6 @@
 
 
             function resetTable() {
-                // rows = 10;
-                // cols = 8;
-                // dataGrid = [];
-                // initializeGrid();
-                // generateGrid();
-
-                // $('#dataTable tbody td:not(:first-child)').text('');
 
                 location.reload();
 
@@ -329,6 +370,63 @@
                 resetTable(); // Call the reset function when the button is clicked
 
             });
+
+
+
+            $('#saveExcelBtn').on('click', function () {
+                saveAsExcel();
+            });
+
+            // Function to save table data as an Excel file
+            function saveAsExcel() {
+                const wb = XLSX.utils.book_new();
+                wb.SheetNames.push('Sheet1');
+
+                const table = document.getElementById('dataTable');
+
+                // Clone the table to prevent manipulation of the original table
+                const clonedTable = table.cloneNode(true);
+
+                // Remove the first column in the tbody
+                $(clonedTable).find('tbody tr').each(function () {
+                    $(this).find('td:first-child').remove();
+                });
+
+                // Remove the first column in the table headers
+                $(clonedTable).find('thead th').remove();
+
+                // Get the updated table data
+                const wsData = XLSX.utils.table_to_sheet(clonedTable);
+
+                wb.Sheets['Sheet1'] = wsData;
+
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+
+                function s2ab(s) {
+                    const buf = new ArrayBuffer(s.length);
+                    const view = new Uint8Array(buf);
+                    for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff;
+                    return buf;
+                }
+
+                const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
+
+                saveAs(blob, 'generated.xlsx');
+            }
+
+            // SaveAs function for compatibility with different browsers
+            function saveAs(blob, fileName) {
+                if (window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveOrOpenBlob(blob, fileName);
+                } else {
+                    const elem = window.document.createElement('a');
+                    elem.href = window.URL.createObjectURL(blob);
+                    elem.download = fileName;
+                    document.body.appendChild(elem);
+                    elem.click();
+                    document.body.removeChild(elem);
+                }
+            }
 
         });
 
