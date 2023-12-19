@@ -33,6 +33,23 @@
             margin-left: 5px;
         }
 
+        .error-highlight {
+            background-color: #ff9999;
+            /* Highlight color for error */
+        }
+
+
+        textarea#jsonInput,
+        #output {
+            min-height: 400px !important;
+            min-height: 400px !important;
+        }
+
+        #output {
+            background-color: #272822 !important;
+            margin-top: 0px !important;
+        }
+
         /* Media query for responsiveness */
         @media screen and (max-width: 600px) {
             #output {
@@ -45,20 +62,88 @@
 <body>
     <div class="container">
         <h1>JSON Formatter & Validator</h1>
-        <textarea id="jsonInput" class="form-control" placeholder="Enter JSON here"></textarea>
-        <button onclick="formatAndValidate()" class="btn btn-primary mt-3">Format & Validate</button>
-        <button onclick="clearFields()" class="btn btn-secondary mt-3 clear-btn">Clear</button>
-        <button onclick="saveFormattedJSON()" class="btn btn-success mt-3">Save Formatted JSON</button>
-        <div id="output" class="mt-3"></div>
-        <div id="error" class="mt-3 error"></div>
-        <div id="mess" class="mt-3"></div>
+
+
+        <div class="row">
+            <div class="col-md-6">
+                <textarea id="jsonInput" class="form-control"
+                    placeholder="Enter JSON here">{"id":"0001","type":"donut","name":"Cake}</textarea>
+                <button onclick="formatAndValidate()" class="btn btn-primary mt-3">Format & Validate</button>
+                <button onclick="clearFields()" class="btn btn-secondary mt-3 clear-btn">Clear</button>
+                <button onclick="saveFormattedJSON()" class="btn btn-success mt-3">Save Formatted JSON</button>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div id="output" class="mt-3"></div>
+                <div id="error" class="mt-3 error"></div>
+                <div id="mess" class="mt-3"></div>
+
+            </div>
+        </div>
+
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/components/prism-json.min.js"></script>
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/javascript/javascript.min.js"></script>
+
+
     <script>
+        function highlightErrorPosition(error) {
+            const jsonInput = $('#jsonInput');
+            const errorPosition = findErrorPosition(jsonInput.val(), error);
+
+            if (errorPosition !== -1) {
+                const inputVal = jsonInput.val();
+                const beforeError = inputVal.substring(0, errorPosition);
+                const errorPart = inputVal.substring(errorPosition, errorPosition + 1);
+                const afterError = inputVal.substring(errorPosition + 1);
+                const highlightedInput = `${beforeError}<span class="error-highlight">${errorPart}</span>${afterError}`;
+                jsonInput.val(highlightedInput);
+            }
+        }
+
+        function findErrorPosition(input, error) {
+            const errorMessage = error.message.toLowerCase();
+            const jsonSnippet = input.toLowerCase();
+            return jsonSnippet.indexOf(errorMessage);
+        }
+
+        function handleInvalidJSON(error) {
+            const errorMessage = 'Invalid JSON:';
+            const formattedError = `${errorMessage} ${error.message}`;
+            $('#output').empty().removeClass('error');
+            $('#error').html(`<span class="error">${formattedError}</span>`).show();
+            $('#mess').empty().hide();
+
+            highlightErrorPosition(error);
+            displaySyntaxError(error);
+        }
+
+        function displaySyntaxError(error) {
+            const outputDiv = $('#output');
+            const jsonInputVal = $('#jsonInput').val();
+            const errorPosition = findErrorPosition(jsonInputVal, error);
+
+            if (errorPosition !== -1) {
+                const beforeError = jsonInputVal.substring(0, errorPosition);
+                const errorPart = jsonInputVal.substring(errorPosition, errorPosition + 1);
+                const afterError = jsonInputVal.substring(errorPosition + 1);
+                const formattedJSON = `${beforeError}<span class="error-highlight">${errorPart}</span>${afterError}`;
+                outputDiv.html(`<pre class="language-json" tabindex="0"><code class="language-json">${formattedJSON}</code></pre>`);
+                addCopyButton(outputDiv); // Call addCopyButton function he
+            }
+        }
+
         function formatAndValidate() {
             const jsonInput = $('#jsonInput').val();
             if (jsonInput.trim() === '') {
@@ -69,16 +154,21 @@
                 const parsedJSON = JSON.parse(jsonInput);
                 const formattedJSON = JSON.stringify(parsedJSON, null, 2);
                 const outputDiv = $('#output');
-                outputDiv.html('<pre><code class="language-json">' + formattedJSON + '</code></pre>').removeClass('error');
-                Prism.highlightAll(); // Apply Prism syntax highlighting
 
+                outputDiv.html(`<pre class="language-json" tabindex="0"><code class="language-json">${formattedJSON}</code></pre>`);
+                addCopyButton(outputDiv); // Call addCopyButton function here
+
+                Prism.highlightAll(); // Apply Prism syntax highlighting
                 clearErrors();
                 showMessage('JSON is valid!');
-                addCopyButton(outputDiv); // Add copy button
             } catch (error) {
                 handleInvalidJSON(error);
             }
         }
+
+        $('#jsonInput').on('input', function () {
+            formatAndValidate();
+        });
 
         function addCopyButton(outputDiv) {
             const copyButton = $('<button class="btn btn-secondary copy-btn">Copy</button>');
@@ -110,14 +200,83 @@
             $('#output').removeClass('error');
         }
 
+        function highlightErrorPosition(error) {
+            const jsonInput = $('#jsonInput');
+            const errorPosition = findErrorPosition(jsonInput.val(), error);
+
+            if (errorPosition !== -1) {
+                const inputVal = jsonInput.val();
+                const beforeError = inputVal.substring(0, errorPosition);
+                const errorPart = inputVal.substring(errorPosition, errorPosition + 1);
+                const afterError = inputVal.substring(errorPosition + 1);
+                const highlightedInput = `${beforeError}<span class="error-highlight">${errorPart}</span>${afterError}`;
+                jsonInput.val(highlightedInput);
+            }
+        }
+
+        function findErrorPosition(input, error) {
+            const errorMessage = error.message.toLowerCase();
+            const jsonSnippet = input.toLowerCase();
+            return jsonSnippet.indexOf(errorMessage);
+        }
+
         function handleInvalidJSON(error) {
+            const errorMessage = 'Invalid JSON:';
+            const formattedError = `${errorMessage} ${error.message}`;
             $('#output').empty().removeClass('error');
-            $('#error').text('Invalid JSON: ' + error).show();
+            $('#error').html(`<span class="error">${formattedError}</span>`).show();
             $('#mess').empty().hide();
+
+            highlightErrorPosition(error);
         }
 
         function showMessage(message) {
             $('#mess').text(message).removeClass('error').show();
+        }
+
+        function handleDetailedJSONError(error) {
+            const errorMessage = error.message.toLowerCase();
+            const jsonInputVal = $('#jsonInput').val();
+
+            if (errorMessage.includes('syntax')) {
+                displayErrorWithHighlight('Syntax error: ', error);
+            } else if (errorMessage.includes('unexpected end')) {
+                displayErrorWithHighlight('Unexpected end of JSON input.', error);
+            } else if (errorMessage.includes('missing')) {
+                if (errorMessage.includes('comma')) {
+                    displayErrorWithHighlight('Missing comma.', error);
+                } else {
+                    displayErrorWithHighlight('Unexpected end of JSON input.', error);
+                }
+            } else if (errorMessage.includes('invalid')) {
+                displayErrorWithHighlight('Invalid data type.', error);
+            } else {
+                handleInvalidJSON(error);
+            }
+        }
+
+        function displayErrorWithHighlight(errorType, error) {
+            const errorPosition = findErrorPosition($('#jsonInput').val(), error);
+            const outputDiv = $('#output');
+
+            if (errorPosition !== -1) {
+                const beforeError = jsonInputVal.substring(0, errorPosition);
+                const errorPart = jsonInputVal.substring(errorPosition, errorPosition + 1);
+                const afterError = jsonInputVal.substring(errorPosition + 1);
+                const formattedJSON = `${beforeError}<span class="${getErrorClass(error.message)}">${errorPart}</span>${afterError}`;
+                outputDiv.html(`<pre class="language-json" tabindex="0"><code class="language-json">${formattedJSON}</code></pre>`);
+                addCopyButton(outputDiv); // Call addCopyButton function here
+            }
+        }
+
+        function getErrorClass(errorMessage) {
+            if (errorMessage.includes('syntax')) {
+                return 'syntax-error';
+            } else if (errorMessage.includes('comma')) {
+                return 'comma-error';
+            } else {
+                return 'data-type-error';
+            }
         }
 
         $('#jsonInput').on('input', function () {
@@ -129,7 +288,7 @@
                     JSON.parse(inputValue);
                     clearErrors();
                 } catch (error) {
-                    handleInvalidJSON(error);
+                    handleDetailedJSONError(error);
                 }
             }
         });
