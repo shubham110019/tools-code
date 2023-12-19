@@ -5,23 +5,18 @@
     <meta charset="UTF-8">
     <title>JSON Formatter & Validator</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/themes/prism-okaidia.min.css">
     <style>
-        /* Additional CSS styles */
-        body {
-            padding: 20px;
-        }
-
-        #jsonInput {
-            width: 100%;
-            height: 200px;
-            margin-bottom: 10px;
-        }
-
         #output {
             border: 1px solid #ccc;
             padding: 10px;
             position: relative;
-            /* Added position relative */
+            overflow-x: auto;
+            /* Enable horizontal scrolling */
+            background-color: #333;
+            /* Dark background */
+            color: #fff;
+            /* Text color */
         }
 
         .error {
@@ -33,6 +28,17 @@
             top: 5px;
             right: 5px;
         }
+
+        .clear-btn {
+            margin-left: 5px;
+        }
+
+        /* Media query for responsiveness */
+        @media screen and (max-width: 600px) {
+            #output {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 
@@ -41,56 +47,125 @@
         <h1>JSON Formatter & Validator</h1>
         <textarea id="jsonInput" class="form-control" placeholder="Enter JSON here"></textarea>
         <button onclick="formatAndValidate()" class="btn btn-primary mt-3">Format & Validate</button>
+        <button onclick="clearFields()" class="btn btn-secondary mt-3 clear-btn">Clear</button>
+        <button onclick="saveFormattedJSON()" class="btn btn-success mt-3">Save Formatted JSON</button>
         <div id="output" class="mt-3"></div>
         <div id="error" class="mt-3 error"></div>
         <div id="mess" class="mt-3"></div>
-
-
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/components/prism-json.min.js"></script>
     <script>
         function formatAndValidate() {
             const jsonInput = $('#jsonInput').val();
+            if (jsonInput.trim() === '') {
+                $('#error').empty().hide();
+                return;
+            }
             try {
                 const parsedJSON = JSON.parse(jsonInput);
                 const formattedJSON = JSON.stringify(parsedJSON, null, 2);
-                const prettifiedJSON = syntaxHighlight(formattedJSON);
                 const outputDiv = $('#output');
-                outputDiv.html('<pre>' + prettifiedJSON + '</pre>').removeClass('error');
+                outputDiv.html('<pre><code class="language-json">' + formattedJSON + '</code></pre>').removeClass('error');
+                Prism.highlightAll(); // Apply Prism syntax highlighting
 
-                // Create and append the copy button
-                const copyButton = $('<button class="btn btn-secondary copy-btn" id="copybutton">Copy</button>');
-                copyButton.on('click', function () {
-                    const copyText = outputDiv.find('pre').text();
-                    navigator.clipboard.writeText(copyText)
-                        .then(() => {
-                            $('#copybutton').text('Copied');
-                            setTimeout(() => {
-                                $('#copybutton').text('Copy');
-                            }, 2000); // Revert text after 3 seconds
-                        })
-                        .catch(err => {
-                            console.error('Failed to copy: ', err);
-                        });
-                });
-                outputDiv.append(copyButton);
-
-                // Clear any previous errors
-                $('#error').empty().hide();
-                $('#mess').text('JSON is valid!').removeClass('error').show();
+                clearErrors();
+                showMessage('JSON is valid!');
+                addCopyButton(outputDiv); // Add copy button
             } catch (error) {
-                $('#output').empty().removeClass('error');
-                $('#error').text('Invalid JSON: ' + error).show();
-                $('#mess').empty().hide();
+                handleInvalidJSON(error);
             }
         }
 
-        function syntaxHighlight(json) {
-            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            return json.replace(/("(?:[^"\\]|\\.)*"(?=:)\s*:)/g, '<span class="text-primary">$1</span>');
+        function addCopyButton(outputDiv) {
+            const copyButton = $('<button class="btn btn-secondary copy-btn">Copy</button>');
+            copyButton.on('click', function () {
+                const copyText = outputDiv.find('pre').text();
+                navigator.clipboard.writeText(copyText)
+                    .then(() => {
+                        copyButton.text('Copied');
+                        setTimeout(() => {
+                            copyButton.text('Copy');
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy: ', err);
+                    });
+            });
+            outputDiv.append(copyButton);
         }
+
+        function clearFields() {
+            $('#jsonInput').val('');
+            $('#output').empty();
+            clearErrors();
+            $('#mess').empty().hide();
+        }
+
+        function clearErrors() {
+            $('#error').empty().hide();
+            $('#output').removeClass('error');
+        }
+
+        function handleInvalidJSON(error) {
+            $('#output').empty().removeClass('error');
+            $('#error').text('Invalid JSON: ' + error).show();
+            $('#mess').empty().hide();
+        }
+
+        function showMessage(message) {
+            $('#mess').text(message).removeClass('error').show();
+        }
+
+        $('#jsonInput').on('input', function () {
+            const inputValue = $(this).val();
+            if (inputValue.trim() === '') {
+                clearErrors();
+            } else {
+                try {
+                    JSON.parse(inputValue);
+                    clearErrors();
+                } catch (error) {
+                    handleInvalidJSON(error);
+                }
+            }
+        });
+
+        function saveFormattedJSON() {
+            const jsonInput = $('#jsonInput').val();
+            if (jsonInput.trim() === '') {
+                return;
+            }
+
+            try {
+                const parsedJSON = JSON.parse(jsonInput);
+                const formattedJSON = JSON.stringify(parsedJSON, null, 2);
+
+                // Create a blob containing the formatted JSON
+                const blob = new Blob([formattedJSON], { type: 'application/json' });
+
+                // Create a link element to download the JSON
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'formatted_json.json';
+                document.body.appendChild(a);
+                a.click();
+
+                // Clean up
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showMessage('JSON saved successfully!');
+            } catch (error) {
+                console.error('Error saving JSON: ', error);
+                showMessage('Failed to save JSON.');
+            }
+        }
+
     </script>
 </body>
 
