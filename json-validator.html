@@ -42,6 +42,10 @@
         <textarea id="jsonInput" class="form-control" placeholder="Enter JSON here"></textarea>
         <button onclick="formatAndValidate()" class="btn btn-primary mt-3">Format & Validate</button>
         <div id="output" class="mt-3"></div>
+        <div id="error" class="mt-3 error"></div>
+        <div id="mess" class="mt-3"></div>
+
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -73,8 +77,13 @@
                 });
                 outputDiv.append(copyButton);
 
+                // Clear any previous errors
+                $('#error').empty().hide();
+                $('#mess').text('JSON is valid!').removeClass('error').show();
             } catch (error) {
-                $('#output').text('Invalid JSON: ' + error).addClass('error');
+                $('#output').empty().removeClass('error');
+                $('#error').text('Invalid JSON: ' + error).show();
+                $('#mess').empty().hide();
             }
         }
 
