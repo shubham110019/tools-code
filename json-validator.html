@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>JSON Formatter & Validator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Additional CSS styles */
+        body {
+            padding: 20px;
+        }
+
+        #jsonInput {
+            width: 100%;
+            height: 200px;
+            margin-bottom: 10px;
+        }
+
+        #output {
+            border: 1px solid #ccc;
+            padding: 10px;
+            position: relative;
+            /* Added position relative */
+        }
+
+        .error {
+            color: red;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>JSON Formatter & Validator</h1>
+        <textarea id="jsonInput" class="form-control" placeholder="Enter JSON here"></textarea>
+        <button onclick="formatAndValidate()" class="btn btn-primary mt-3">Format & Validate</button>
+        <div id="output" class="mt-3"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function formatAndValidate() {
+            const jsonInput = $('#jsonInput').val();
+            try {
+                const parsedJSON = JSON.parse(jsonInput);
+                const formattedJSON = JSON.stringify(parsedJSON, null, 2);
+                const prettifiedJSON = syntaxHighlight(formattedJSON);
+                const outputDiv = $('#output');
+                outputDiv.html('<pre>' + prettifiedJSON + '</pre>').removeClass('error');
+
+                // Create and append the copy button
+                const copyButton = $('<button class="btn btn-secondary copy-btn" id="copybutton">Copy</button>');
+                copyButton.on('click', function () {
+                    const copyText = outputDiv.find('pre').text();
+                    navigator.clipboard.writeText(copyText)
+                        .then(() => {
+                            $('#copybutton').text('Copied');
+                            setTimeout(() => {
+                                $('#copybutton').text('Copy');
+                            }, 2000); // Revert text after 3 seconds
+                        })
+                        .catch(err => {
+                            console.error('Failed to copy: ', err);
+                        });
+                });
+                outputDiv.append(copyButton);
+
+            } catch (error) {
+                $('#output').text('Invalid JSON: ' + error).addClass('error');
+            }
+        }
+
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(?:[^"\\]|\\.)*"(?=:)\s*:)/g, '<span class="text-primary">$1</span>');
+        }
+    </script>
+</body>
+
+</html>
