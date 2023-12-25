@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON to XML Converter</title>
+    <!-- Add Bootstrap CSS link -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Add Ace editor library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <style>
+        #inputJson,
+        #outputXml {
+            width: 100%;
+            height: 150px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2 class="mt-3">JSON to XML Converter</h2>
+
+        <button id="demoContentBtn" class="btn btn-secondary mb-3">Demo Content</button>
+
+        <div class="form-group">
+            <label for="inputJson">Input JSON:</label>
+            <!-- Replace textarea with Ace editor -->
+            <div id="inputJson" class="ace-editor" style="height: 150px;"></div>
+        </div>
+
+        <button id="convertBtn" class="btn btn-primary">Convert to XML</button>
+        <button id="clearBtn" class="btn btn-warning">Clear</button>
+
+        <div class="form-group mt-3">
+            <label for="outputXml">Output XML:</label>
+            <!-- Replace textarea with Ace editor -->
+            <div id="outputXml" class="ace-editor" style="height: 150px;" readonly></div>
+        </div>
+
+        <button id="downloadBtn" class="btn btn-success" disabled>Download XML</button>
+    </div>
+
+    <!-- Add Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.6.4.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Add vkBeautify library for XML prettification -->
+    <script src="https://cdn.jsdelivr.net/npm/frigus02-vkbeautify@1.0.1/vkbeautify.min.js"></script>
+
+    <script>
+        // Declare Ace editors globally
+        var inputJsonEditor, outputXmlEditor;
+
+        $(document).ready(function () {
+            // Initialize Ace editor for inputJson
+            inputJsonEditor = ace.edit("inputJson");
+            inputJsonEditor.setTheme("ace/theme/chrome");
+            inputJsonEditor.getSession().setMode("ace/mode/json");
+
+            // Initialize Ace editor for outputXml
+            outputXmlEditor = ace.edit("outputXml");
+            outputXmlEditor.setTheme("ace/theme/chrome");
+            outputXmlEditor.getSession().setMode("ace/mode/xml");
+
+            $('#convertBtn').click(function () {
+                convertJsonToXml();
+            });
+
+            $('#downloadBtn').click(function () {
+                downloadXml();
+            });
+
+            $('#demoContentBtn').click(function () {
+                loadDemoContent();
+            });
+
+            $('#clearBtn').click(function () {
+                clearFields();
+            });
+        });
+
+        function loadDemoContent() {
+            var demoJson = '{"store":{"book":[{"category":"reference","author":"Nigel Rees","title":"Sayings of the Century","price":8.95},{"category":"fiction","author":"Evelyn Waugh","title":"Sword of Honour","price":12.99},{"category":"fiction","author":"J. R. R. Tolkien","title":"The Lord of the Rings","isbn":"0-395-19395-8","price":22.99}],"bicycle":{"color":"red","price":19.95}}}';
+            // Set content in Ace editor
+            inputJsonEditor.setValue(demoJson);
+        }
+
+        function convertJsonToXml() {
+            var inputJson = inputJsonEditor.getValue();
+            try {
+                var jsonObj = JSON.parse(inputJson);
+                var xmlString = '<?xml version="1.0" encoding="UTF-8" ?>\n<root>\n' + jsonToXml(jsonObj) + '\n</root>';
+                // Prettify the XML content
+                xmlString = vkbeautify.xml(xmlString);
+                // Set content in Ace editor
+                outputXmlEditor.setValue(xmlString);
+                $('#downloadBtn').prop('disabled', false);
+            } catch (e) {
+                alert('Invalid JSON format.');
+            }
+        }
+
+        function clearFields() {
+            // Clear content in Ace editors
+            inputJsonEditor.setValue('');
+            outputXmlEditor.setValue('');
+            $('#downloadBtn').prop('disabled', true);
+        }
+
+        function jsonToXml(jsonObj) {
+            var xmlString = '';
+            for (var prop in jsonObj) {
+                if (jsonObj.hasOwnProperty(prop)) {
+                    // Exclude elements that start with a number or are not valid XML tags
+                    if (/^[0-9]/.test(prop) || !isValidXmlTag(prop)) {
+                        continue;
+                    }
+
+                    if (Array.isArray(jsonObj[prop])) {
+                        for (var i = 0; i < jsonObj[prop].length; i++) {
+                            xmlString += '<' + prop + '>';
+                            xmlString += jsonToXml(jsonObj[prop][i]);
+                            xmlString += '</' + prop + '>';
+                        }
+                    } else if (typeof jsonObj[prop] === 'object') {
+                        xmlString += '<' + prop + '>';
+                        xmlString += jsonToXml(jsonObj[prop]);
+                        xmlString += '</' + prop + '>';
+                    } else {
+                        xmlString += '<' + prop + '>' + jsonObj[prop] + '</' + prop + '>';
+                    }
+                }
+            }
+            return xmlString;
+        }
+
+        function isValidXmlTag(tag) {
+            // Check if the tag follows XML naming conventions
+            return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tag);
+        }
+
+        function downloadXml() {
+            var xmlContent = outputXmlEditor.getValue();
+            var blob = new Blob([xmlContent], { type: 'text/xml' });
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'output.xml';
+            link.click();
+        }
+    </script>
+</body>
+
+</html>
