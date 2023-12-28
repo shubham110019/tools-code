@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Custom Video Converter</title>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="text-center mb-4">Custom Video Converter</h2>
+
+                <!-- Input File -->
+                <div class="form-group">
+                    <label for="videoInput">Choose Video File:</label>
+                    <input type="file" class="form-control-file" id="videoInput">
+                </div>
+
+                <!-- Output Format -->
+                <div class="form-group">
+                    <label for="outputFormat">Select Output Format:</label>
+                    <select class="form-control" id="outputFormat">
+                        <option value="mp4">MP4</option>
+                        <option value="webm">WebM</option>
+                        <option value="ogg">Ogg</option>
+                    </select>
+                </div>
+
+                <!-- Convert Button -->
+                <button class="btn btn-primary btn-block" onclick="convertVideo()">Convert Video</button>
+
+                <!-- Output Video Download Link -->
+                <div id="downloadLink" class="mt-3" style="display: none;">
+                    <label for="outputVideo">Download Converted Video:</label>
+                    <a id="outputVideo" class="btn btn-success btn-block" download>Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function convertVideo() {
+            const videoInput = document.getElementById('videoInput');
+            const outputFormat = document.getElementById('outputFormat').value;
+            const downloadLink = document.getElementById('downloadLink');
+            const outputVideo = document.getElementById('outputVideo');
+
+            if (videoInput.files.length === 0) {
+                alert('Please choose a video file.');
+                return;
+            }
+
+            const inputVideo = videoInput.files[0];
+
+            try {
+                // Simulate video conversion (replace this with your actual conversion logic)
+                const convertedBlob = await convertVideoBlob(inputVideo, outputFormat);
+
+                // Create download link
+                const outputUrl = URL.createObjectURL(convertedBlob);
+
+                // Set download link attributes
+                outputVideo.href = outputUrl;
+                outputVideo.download = `output.${outputFormat}`; // Specify the filename
+                downloadLink.style.display = 'block';
+            } catch (error) {
+                console.error('Error converting video:', error);
+                alert('Error converting video. Please try again.');
+            }
+        }
+
+        function convertVideoBlob(inputVideo, outputFormat) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    // Simulated conversion: Just create a Blob with the same data (replace this with your actual conversion logic)
+                    const convertedBlob = new Blob([event.target.result], { type: `video/${outputFormat}` });
+                    resolve(convertedBlob);
+                };
+
+                reader.onerror = function (event) {
+                    reject(event.error);
+                };
+
+                reader.readAsArrayBuffer(inputVideo);
+            });
+        }
+    </script>
+
+</body>
+
+</html>
