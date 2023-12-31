@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Compressor</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Compressor.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.0.6/compressor.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2 class="mb-4">Image Compressor</h2>
+        <label for="imageInput">Select Image:</label>
+        <input type="file" id="imageInput" class="form-control mb-3">
+
+        <label for="qualityInput">Compression Quality (0.1 to 1.0):</label>
+        <input type="number" id="qualityInput" class="form-control mb-3" step="0.1" min="0.1" max="1.0" value="0.8">
+
+        <button class="btn btn-primary" onclick="compressImage()">Compress Image</button>
+        <button class="btn btn-success" onclick="downloadImage()" id="downloadBtn" style="display: none;">Download
+            Compressed Image</button>
+        <hr>
+        <h4>Original Image</h4>
+        <p id="originalSize">Size: N/A KB</p>
+        <h4>Compressed Image</h4>
+        <p id="compressedSize">Size: N/A KB</p>
+        <img id="compressedImage" class="border" style="max-width: 100%;" alt="Compressed Image">
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script>
+        function compressImage() {
+            // Get the input element and quality input
+            var input = document.getElementById('imageInput');
+            var qualityInput = document.getElementById('qualityInput');
+
+            // Check if a file is selected
+            if (!input.files || !input.files[0]) {
+                alert('Please select an image.');
+                return;
+            }
+
+            // Create a Compressor instance with the specified quality
+            var compressor = new Compressor(input.files[0], {
+                quality: parseFloat(qualityInput.value), // Adjust the quality (0.1 to 1.0)
+                success(result) {
+                    // Display original image size
+                    var originalSize = document.getElementById('originalSize');
+                    originalSize.textContent = 'Size: ' + (input.files[0].size / 1024).toFixed(2) + ' KB';
+
+                    // Display compressed image size
+                    var compressedSize = document.getElementById('compressedSize');
+                    compressedSize.textContent = 'Size: ' + (result.size / 1024).toFixed(2) + ' KB';
+
+                    // Display the compressed image
+                    var compressedImage = document.getElementById('compressedImage');
+                    compressedImage.src = URL.createObjectURL(result);
+
+                    // Show download button
+                    document.getElementById('downloadBtn').style.display = 'block';
+                },
+                error(err) {
+                    console.error(err.message);
+                },
+            });
+        }
+
+        function downloadImage() {
+            // Get the compressed image source
+            var compressedSrc = document.getElementById('compressedImage').src;
+
+            // Get the original file extension
+            var originalExtension = document.getElementById('imageInput').files[0].name.split('.').pop().toLowerCase();
+
+            // Get the compressed image data
+            var compressedDataUrl = compressedSrc;
+
+            // Display compressed image size
+            var compressedSize = document.getElementById('compressedSize').textContent;
+
+            // Create a temporary link element
+            var downloadLink = document.createElement('a');
+            downloadLink.href = compressedDataUrl;
+
+            // Set the download attribute with the original image's file name and extension
+            downloadLink.download = 'compressed_image_' + compressedSize + '.' + originalExtension;
+
+            // Append the link to the body
+            document.body.appendChild(downloadLink);
+
+            // Trigger a click event to download the image
+            downloadLink.click();
+
+            // Remove the temporary link
+            document.body.removeChild(downloadLink);
+        }
+    </script>
+
+</body>
+
+</html>
