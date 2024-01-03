@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Converter</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Audio Converter</h1>
+
+        <form id="audioConverterForm">
+            <div class="form-group">
+                <label for="audioFile">Choose Audio File:</label>
+                <input type="file" class="form-control-file" id="audioFile" accept="audio/*" required>
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="convertAudio()">Convert and Download</button>
+        </form>
+
+        <div class="mt-4" id="downloadLinkArea" style="display: none;">
+            <h4>Download Converted File:</h4>
+            <a id="downloadLink" class="btn btn-success" download>Download</a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- AudioBuffer to WAV library -->
+    <script src="https://cdn.jsdelivr.net/npm/audiobuffer-to-wav"></script>
+
+    <script>
+        async function convertAudio() {
+            // Get the audio file
+            const audioFile = document.getElementById('audioFile').files[0];
+
+            // Read the audio file
+            const audioBuffer = await readAudioFile(audioFile);
+
+            // Convert AudioBuffer to WAV
+            const wavBuffer = audioBufferToWav(audioBuffer);
+
+            // Create a Blob from the WAV data
+            const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+
+            // Create a download link
+            const downloadLink = document.getElementById('downloadLink');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = 'converted.wav';
+
+            // Display the download link
+            document.getElementById('downloadLinkArea').style.display = 'block';
+        }
+
+        function readAudioFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+
+                reader.onload = (event) => {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    audioContext.decodeAudioData(event.target.result, resolve, reject);
+                };
+
+                reader.onerror = (error) => reject(error);
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function audioBufferToWav(audioBuffer) {
+            const wavBuffer = audioBufferToWavBuffer(audioBuffer);
+            return new Uint8Array(wavBuffer);
+        }
+
+        function audioBufferToWavBuffer(audioBuffer) {
+            const numChannels = audioBuffer.numberOfChannels;
+            const sampleRate = audioBuffer.sampleRate;
+            const interleaved = interleave(audioBuffer.getChannelData(0));
+
+            // create the buffer and view to create the .WAV file
+            const buffer = new ArrayBuffer(44 + interleaved.length * 2);
+            const view = new DataView(buffer);
+
+            // RIFF identifier 'RIFF'
+            writeString(view, 0, 'RIFF');
+            // file length minus RIFF identifier length and file description length
+            view.setUint32(4, 36 + interleaved.length * 2, true);
+            // RIFF type 'WAVE'
+            writeString(view, 8, 'WAVE');
+            // format chunk identifier 'fmt '
+            writeString(view, 12, 'fmt ');
+            // format chunk length
+            view.setUint32(16, 16, true);
+            // sample format (raw)
+            view.setUint16(20, 1, true);
+            // channel count
+            view.setUint16(22, numChannels, true);
+            // sample rate
+            view.setUint32(24, sampleRate, true);
+            // byte rate (sample rate * block align)
+            view.setUint32(28, sampleRate * 4, true);
+            // block align (channel count * bytes per sample)
+            view.setUint16(32, numChannels * 2, true);
+            // bits per sample
+            view.setUint16(34, 16, true);
+            // data chunk identifier 'data'
+            writeString(view, 36, 'data');
+            // data chunk length
+            view.setUint32(40, interleaved.length * 2, true);
+
+            // write the PCM samples
+            floatTo16BitPCM(view, 44, interleaved);
+
+            return buffer;
+        }
+
+        function interleave(input) {
+            const output = new Float32Array(input.length * 2);
+            for (let i = 0; i < input.length; i++) {
+                output[i * 2] = input[i];
+                output[i * 2 + 1] = input[i];
+            }
+            return output;
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        function floatTo16BitPCM(output, offset, input) {
+            for (let i = 0; i < input.length; i++, offset += 2) {
+                const s = Math.max(-1, Math.min(1, input[i]));
+                output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+        }
+    </script>
+
+</body>
+
+</html>
