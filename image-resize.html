@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Image Resizer</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        #loadingIndicator {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2 class="mb-4">Bulk Image Resizer</h2>
+
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="imageInput">Select Images</label>
+                <input type="file" class="form-control-file" id="imageInput" accept="image/*" multiple required>
+            </div>
+
+            <div class="form-group">
+                <label for="resizeWidth">Resize Width (px)</label>
+                <input type="number" class="form-control" id="resizeWidth" placeholder="Enter width">
+            </div>
+
+            <div class="form-group">
+                <label for="resizeHeight">Resize Height (px)</label>
+                <input type="number" class="form-control" id="resizeHeight" placeholder="Enter height">
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="resizeImages()">Resize Images</button>
+
+            <!-- Loading indicator -->
+            <div id="loadingIndicator" class="mt-2">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <span class="ml-2">Processing Images...</span>
+            </div>
+        </form>
+
+        <div id="result" class="mt-4"></div>
+    </div>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <script>
+        function showLoadingIndicator() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+        }
+
+        function hideLoadingIndicator() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        function formatFileSize(size) {
+            var units = ["B", "KB", "MB", "GB", "TB"];
+            var i = 0;
+            while (size >= 1024 && i < units.length - 1) {
+                size /= 1024;
+                i++;
+            }
+            return size.toFixed(2) + " " + units[i];
+        }
+
+        function resizeImages() {
+            var input = document.getElementById('imageInput');
+            var width = document.getElementById('resizeWidth').value;
+            var height = document.getElementById('resizeHeight').value;
+
+            if (!input.files.length) {
+                alert('Please select at least one image');
+                return;
+            }
+
+            showLoadingIndicator();
+
+            var images = input.files;
+            var resultContainer = document.getElementById('result');
+            resultContainer.innerHTML = '';
+
+            Array.from(images).forEach(function (file, index) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    var img = new Image();
+                    img.src = e.target.result;
+
+                    img.onload = function () {
+                        var canvas = document.createElement('canvas');
+                        var ctx = canvas.getContext('2d');
+
+                        var newWidth, newHeight;
+
+                        if (width && height) {
+                            newWidth = parseInt(width);
+                            newHeight = parseInt(height);
+                        } else if (width) {
+                            // Calculate height to maintain aspect ratio based on the provided width
+                            newWidth = parseInt(width);
+                            newHeight = newWidth * (img.height / img.width);
+                        } else if (height) {
+                            // Calculate width to maintain aspect ratio based on the provided height
+                            newHeight = parseInt(height);
+                            newWidth = newHeight * (img.width / img.height);
+                        } else {
+                            // If both width and height are null, use the original dimensions
+                            newWidth = img.width;
+                            newHeight = img.height;
+                        }
+
+                        canvas.width = newWidth;
+                        canvas.height = newHeight;
+
+                        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+                        // Convert the canvas content to a blob
+                        canvas.toBlob(function (blob) {
+                            var dataURL = URL.createObjectURL(blob);
+
+                            resultContainer.innerHTML += `<p>Image ${index + 1} - Original Dimensions: ${img.width} x ${img.height}, Size: ${formatFileSize(file.size)}</p>`;
+                            resultContainer.innerHTML += `<p>Resized Image: ${newWidth} x ${newHeight}, Size: ${formatFileSize(blob.size)}</p>`;
+                            resultContainer.innerHTML += '<img src="' + dataURL + '" class="img-fluid" alt="Resized Image">';
+                            resultContainer.innerHTML += '<a href="' + dataURL + '" download="resized_image_' + index + '.' + file.type.split("/")[1] + '" class="btn btn-success mt-2">Download Resized Image</a>';
+
+                            if (index === images.length - 1) {
+                                hideLoadingIndicator();
+                            }
+                        }, file.type);
+                    };
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+
+</body>
+
+</html>
