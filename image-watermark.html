@@ -56,6 +56,13 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label for="opacityInput">Watermark Opacity:</label>
+                    <input type="range" class="form-control-range" id="opacityInput" min="0" max="1" step="0.1"
+                        value="1" onchange="updatePreview()">
+                </div>
+
+
                 <!-- Download Button -->
                 <button class="btn btn-primary" onclick="addWatermark()">Add Watermark and Download</button>
 
@@ -80,6 +87,10 @@
 
             var watermarkInput = document.getElementById('watermarkUpload');
             var watermark = watermarkInput.files[0];
+
+            // Get opacity value
+            var opacityInput = document.getElementById('opacityInput');
+            var opacity = parseFloat(opacityInput.value);
 
             // Get the imagePreview element
             var imagePreview = document.getElementById('imagePreview');
@@ -118,6 +129,9 @@
 
                 // Draw the original image
                 previewContext.drawImage(imageObj, 0, 0, previewCanvas.width, previewCanvas.height);
+
+                // Set the opacity of the watermark
+                previewContext.globalAlpha = opacity;
 
                 // Draw the watermark on top based on the selected position
                 var x, y;
@@ -166,12 +180,14 @@
 
                 previewContext.drawImage(watermarkObj, x, y, watermarkObj.width, watermarkObj.height);
 
+                // Reset the globalAlpha back to 1 for future drawings
+                previewContext.globalAlpha = 1;
+
                 // Display the canvas and hide the image preview
                 previewCanvas.style.display = 'block';
                 imagePreview.style.display = 'none';
             });
         }
-
 
         function addWatermark() {
             // Get uploaded image
@@ -182,10 +198,13 @@
             var watermarkInput = document.getElementById('watermarkUpload');
             var watermark = watermarkInput.files[0];
 
-
             // Get selected position
             var positionSelect = document.getElementById('positionSelect');
             var position = positionSelect.value;
+
+            // Get opacity value
+            var opacityInput = document.getElementById('opacityInput');
+            var opacity = parseFloat(opacityInput.value);
 
             // Create a canvas to draw images
             var canvas = document.createElement('canvas');
@@ -202,6 +221,9 @@
 
                 // Draw original image
                 context.drawImage(imageObj, 0, 0, canvas.width, canvas.height);
+
+                // Set the opacity of the watermark
+                context.globalAlpha = opacity;
 
                 // Draw watermark on selected position
                 var x, y;
@@ -252,6 +274,9 @@
                 }
 
                 context.drawImage(watermarkObj, x, y, watermarkObj.width, watermarkObj.height);
+
+                // Reset the globalAlpha back to 1 for future drawings
+                context.globalAlpha = 1;
 
                 // Hide the image preview and show the canvas
                 var imagePreview = document.getElementById('imagePreview');
