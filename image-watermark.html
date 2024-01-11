@@ -13,42 +13,56 @@
     <div class="container mt-5">
         <h2 class="mb-4">Watermark Image</h2>
 
-        <!-- Image Upload -->
-        <div class="form-group">
-            <label for="imageUpload">Upload Image:</label>
-            <input type="file" class="form-control-file" id="imageUpload" accept="image/*">
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <!-- Image Preview -->
+                <div class="form-group previewimgbox">
+                    <label>Image Preview:</label>
+                    <img id="imagePreview" class="img-fluid" alt="Image Preview">
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <!-- Image Upload -->
+                <div class="form-group">
+                    <label for="imageUpload">Upload Image:</label>
+                    <input type="file" class="form-control-file" id="imageUpload" accept="image/*">
+                </div>
+
+                <!-- Watermark Upload -->
+                <div class="form-group">
+                    <label for="watermarkUpload">Upload Watermark:</label>
+                    <input type="file" class="form-control-file" id="watermarkUpload" accept="image/*">
+                </div>
+
+                <!-- Watermark Position -->
+                <div class="form-group">
+                    <label for="positionSelect">Select Watermark Position:</label>
+                    <select class="form-control" id="positionSelect" onchange="updatePreview()">
+                        <option>select one</option>
+                        <option value="top-left">Top Left</option>
+                        <option value="top-center">Top Center</option>
+                        <option value="top-right">Top Right</option>
+                        <option value="center-left">Center Left</option>
+                        <option value="center">Center</option>
+                        <option value="center-right">Center Right</option>
+                        <option value="bottom-left">Bottom Left</option>
+                        <option value="bottom-center">Bottom Center</option>
+                        <option value="bottom-right">Bottom Right</option>
+                    </select>
+                </div>
+
+                <!-- Download Button -->
+                <button class="btn btn-primary" onclick="addWatermark()">Add Watermark and Download</button>
+
+            </div>
+
         </div>
 
-        <!-- Image Preview -->
-        <div class="form-group">
-            <label>Image Preview:</label>
-            <img id="imagePreview" class="img-fluid" alt="Image Preview">
-        </div>
-
-        <!-- Watermark Upload -->
-        <div class="form-group">
-            <label for="watermarkUpload">Upload Watermark:</label>
-            <input type="file" class="form-control-file" id="watermarkUpload" accept="image/*">
-        </div>
-
-        <!-- Watermark Position -->
-        <div class="form-group">
-            <label for="positionSelect">Select Watermark Position:</label>
-            <select class="form-control" id="positionSelect">
-                <option value="top-left">Top Left</option>
-                <option value="top-center">Top Center</option>
-                <option value="top-right">Top Right</option>
-                <option value="center-left">Center Left</option>
-                <option value="center">Center</option>
-                <option value="center-right">Center Right</option>
-                <option value="bottom-left">Bottom Left</option>
-                <option value="bottom-center">Bottom Center</option>
-                <option value="bottom-right">Bottom Right</option>
-            </select>
-        </div>
-
-        <!-- Download Button -->
-        <button class="btn btn-primary" onclick="addWatermark()">Add Watermark and Download</button>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
@@ -56,6 +70,109 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
     <script>
+
+        function updatePreview() {
+            var positionSelect = document.getElementById('positionSelect');
+            var position = positionSelect.value;
+
+            var imageInput = document.getElementById('imageUpload');
+            var image = imageInput.files[0];
+
+            var watermarkInput = document.getElementById('watermarkUpload');
+            var watermark = watermarkInput.files[0];
+
+            // Get the imagePreview element
+            var imagePreview = document.getElementById('imagePreview');
+
+            // Create or get the previewCanvas element
+            var previewCanvas = document.getElementById('previewCanvas');
+
+            if (!image || !imagePreview.src) {
+                // If no image is selected or no image preview is available, remove the canvas
+                if (previewCanvas) {
+                    previewCanvas.remove();
+                }
+                return;
+            }
+
+            if (!previewCanvas) {
+                // Use the imagePreview dimensions to create the canvas
+                previewCanvas = document.createElement('canvas');
+                previewCanvas.id = 'previewCanvas';
+                previewCanvas.className = 'img-fluid';
+                previewCanvas.style.border = '1px solid #ddd';
+                previewCanvas.width = imagePreview.width;
+                previewCanvas.height = imagePreview.height;
+                var formGroup = document.querySelector('.previewimgbox');
+                formGroup.appendChild(previewCanvas);
+            }
+
+            var previewContext = previewCanvas.getContext('2d');
+
+            Promise.all([
+                loadImage(image),
+                loadImage(watermark)
+            ]).then(([imageObj, watermarkObj]) => {
+                previewCanvas.width = imageObj.width;
+                previewCanvas.height = imageObj.height;
+
+                // Draw the original image
+                previewContext.drawImage(imageObj, 0, 0, previewCanvas.width, previewCanvas.height);
+
+                // Draw the watermark on top based on the selected position
+                var x, y;
+                switch (position) {
+                    case 'top-left':
+                        x = 0;
+                        y = 0;
+                        break;
+                    case 'top-center':
+                        x = (previewCanvas.width - watermarkObj.width) / 2;
+                        y = 0;
+                        break;
+                    case 'top-right':
+                        x = previewCanvas.width - watermarkObj.width;
+                        y = 0;
+                        break;
+                    case 'center-left':
+                        x = 0;
+                        y = (previewCanvas.height - watermarkObj.height) / 2;
+                        break;
+                    case 'center':
+                        x = (previewCanvas.width - watermarkObj.width) / 2;
+                        y = (previewCanvas.height - watermarkObj.height) / 2;
+                        break;
+                    case 'center-right':
+                        x = previewCanvas.width - watermarkObj.width;
+                        y = (previewCanvas.height - watermarkObj.height) / 2;
+                        break;
+                    case 'bottom-left':
+                        x = 0;
+                        y = previewCanvas.height - watermarkObj.height;
+                        break;
+                    case 'bottom-center':
+                        x = (previewCanvas.width - watermarkObj.width) / 2;
+                        y = previewCanvas.height - watermarkObj.height;
+                        break;
+                    case 'bottom-right':
+                        x = previewCanvas.width - watermarkObj.width;
+                        y = previewCanvas.height - watermarkObj.height;
+                        break;
+                    default:
+                        x = 0;
+                        y = 0;
+                        break;
+                }
+
+                previewContext.drawImage(watermarkObj, x, y, watermarkObj.width, watermarkObj.height);
+
+                // Display the canvas and hide the image preview
+                previewCanvas.style.display = 'block';
+                imagePreview.style.display = 'none';
+            });
+        }
+
+
         function addWatermark() {
             // Get uploaded image
             var imageInput = document.getElementById('imageUpload');
@@ -64,6 +181,7 @@
             // Get watermark image
             var watermarkInput = document.getElementById('watermarkUpload');
             var watermark = watermarkInput.files[0];
+
 
             // Get selected position
             var positionSelect = document.getElementById('positionSelect');
@@ -135,6 +253,12 @@
 
                 context.drawImage(watermarkObj, x, y, watermarkObj.width, watermarkObj.height);
 
+                // Hide the image preview and show the canvas
+                var imagePreview = document.getElementById('imagePreview');
+                var previewCanvas = document.getElementById('previewCanvas');
+                imagePreview.style.display = 'none';
+                previewCanvas.style.display = 'block';
+
                 // Create a link to download the watermarked image
                 var link = document.createElement('a');
                 link.download = 'watermarked_image.png';
@@ -165,7 +289,15 @@
             var input = this;
             var url = URL.createObjectURL(input.files[0]);
             $('#imagePreview').attr('src', url);
+
+            // Show the image preview and hide the canvas
+            var imagePreview = document.getElementById('imagePreview');
+            var previewCanvas = document.getElementById('previewCanvas');
+            imagePreview.style.display = 'block';
+
+            updatePreview();
         });
+
     </script>
 
 </body>
