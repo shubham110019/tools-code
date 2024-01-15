@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Minifier</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2 class="mb-4">JavaScript Minifier</h2>
+
+        <div class="form-group">
+            <label for="codeTextarea">Enter JavaScript Code:</label>
+            <textarea class="form-control" id="codeTextarea" rows="8"></textarea>
+        </div>
+
+        <button class="btn btn-primary" onclick="minifyCode()">Minify Code</button>
+
+        <div class="mt-4">
+            <label for="minifiedCodeTextarea">Minified Code:</label>
+            <textarea class="form-control" id="minifiedCodeTextarea" rows="8" readonly></textarea>
+            <button id="copyButton" class="btn btn-success mt-2" onclick="copyMinifiedCode()">Copy Minified
+                Code</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript Minification Script -->
+    <script>
+        function minifyCode() {
+            const inputCode = document.getElementById('codeTextarea').value;
+            const minifiedCode = minify(inputCode);
+
+            document.getElementById('minifiedCodeTextarea').value = minifiedCode;
+        }
+
+        function minify(code) {
+            // Remove comments
+            code = code.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, '');
+
+            // Remove leading and trailing whitespaces
+            code = code.trim();
+
+            // Remove extra whitespaces and normalize indentation
+            code = code.replace(/\s+/g, ' ');
+
+            return code;
+        }
+
+        function copyMinifiedCode() {
+            const minifiedCodeTextarea = document.getElementById('minifiedCodeTextarea');
+            const copyButton = document.getElementById('copyButton');
+
+            minifiedCodeTextarea.select();
+            document.execCommand('copy');
+
+            copyButton.innerText = 'Copied';
+
+            setTimeout(function () {
+                copyButton.innerText = 'Copy Minified Code';
+            }, 2000);
+        }
+    </script>
+
+</body>
+
+</html>
