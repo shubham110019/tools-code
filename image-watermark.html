@@ -56,6 +56,32 @@
                     </select>
                 </div>
 
+
+                <!-- Watermark Space Inputs -->
+                <div class="form-group">
+                    <label for="topSpace">Top Space (px):</label>
+                    <input type="number" class="form-control" id="topSpace" placeholder="Enter top space"
+                        onchange="updatePreview()">
+                </div>
+
+                <div class="form-group">
+                    <label for="leftSpace">Left Space (px):</label>
+                    <input type="number" class="form-control" id="leftSpace" placeholder="Enter left space"
+                        onchange="updatePreview()">
+                </div>
+
+                <div class="form-group">
+                    <label for="rightSpace">Right Space (px):</label>
+                    <input type="number" class="form-control" id="rightSpace" placeholder="Enter right space"
+                        onchange="updatePreview()">
+                </div>
+
+                <div class="form-group">
+                    <label for="bottomSpace">Bottom Space (px):</label>
+                    <input type="number" class="form-control" id="bottomSpace" placeholder="Enter bottom space"
+                        onchange="updatePreview()">
+                </div>
+
                 <div class="form-group">
                     <label for="opacityInput">Watermark Opacity:</label>
                     <input type="range" class="form-control-range" id="opacityInput" min="0" max="1" step="0.1"
@@ -91,6 +117,12 @@
             // Get opacity value
             var opacityInput = document.getElementById('opacityInput');
             var opacity = parseFloat(opacityInput.value);
+
+            // Get space values
+            var topSpace = parseInt(document.getElementById('topSpace').value) || 0;
+            var leftSpace = parseInt(document.getElementById('leftSpace').value) || 0;
+            var rightSpace = parseInt(document.getElementById('rightSpace').value) || 0;
+            var bottomSpace = parseInt(document.getElementById('bottomSpace').value) || 0;
 
             // Get the imagePreview element
             var imagePreview = document.getElementById('imagePreview');
@@ -137,19 +169,19 @@
                 var x, y;
                 switch (position) {
                     case 'top-left':
-                        x = 0;
-                        y = 0;
+                        x = leftSpace;
+                        y = topSpace;
                         break;
                     case 'top-center':
                         x = (previewCanvas.width - watermarkObj.width) / 2;
-                        y = 0;
+                        y = topSpace;
                         break;
                     case 'top-right':
-                        x = previewCanvas.width - watermarkObj.width;
-                        y = 0;
+                        x = previewCanvas.width - watermarkObj.width - rightSpace;
+                        y = topSpace;
                         break;
                     case 'center-left':
-                        x = 0;
+                        x = leftSpace;
                         y = (previewCanvas.height - watermarkObj.height) / 2;
                         break;
                     case 'center':
@@ -157,24 +189,24 @@
                         y = (previewCanvas.height - watermarkObj.height) / 2;
                         break;
                     case 'center-right':
-                        x = previewCanvas.width - watermarkObj.width;
+                        x = previewCanvas.width - watermarkObj.width - rightSpace;
                         y = (previewCanvas.height - watermarkObj.height) / 2;
                         break;
                     case 'bottom-left':
-                        x = 0;
-                        y = previewCanvas.height - watermarkObj.height;
+                        x = leftSpace;
+                        y = previewCanvas.height - watermarkObj.height - bottomSpace;
                         break;
                     case 'bottom-center':
                         x = (previewCanvas.width - watermarkObj.width) / 2;
-                        y = previewCanvas.height - watermarkObj.height;
+                        y = previewCanvas.height - watermarkObj.height - bottomSpace;
                         break;
                     case 'bottom-right':
-                        x = previewCanvas.width - watermarkObj.width;
-                        y = previewCanvas.height - watermarkObj.height;
+                        x = previewCanvas.width - watermarkObj.width - rightSpace;
+                        y = previewCanvas.height - watermarkObj.height - bottomSpace;
                         break;
                     default:
-                        x = 0;
-                        y = 0;
+                        x = leftSpace;
+                        y = topSpace;
                         break;
                 }
 
@@ -272,6 +304,22 @@
                         y = canvas.height - watermarkObj.height;
                         break;
                 }
+
+
+                // Use the space values in your calculations when drawing the watermark
+                var topSpace = parseInt(document.getElementById('topSpace').value) || 0;
+                var leftSpace = parseInt(document.getElementById('leftSpace').value) || 0;
+                var rightSpace = parseInt(document.getElementById('rightSpace').value) || 0;
+                var bottomSpace = parseInt(document.getElementById('bottomSpace').value) || 0;
+
+                // Adjust x and y coordinates based on space values
+                x += leftSpace;
+                y += topSpace;
+                x = Math.max(x, leftSpace);
+                y = Math.max(y, topSpace);
+                var adjustedWidth = watermarkObj.width - leftSpace - rightSpace;
+                var adjustedHeight = watermarkObj.height - topSpace - bottomSpace;
+
 
                 context.drawImage(watermarkObj, x, y, watermarkObj.width, watermarkObj.height);
 
