@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Post Character Limit</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+    <style>
+        .editor_full {
+            border: 1px solid #e8e9ea;
+            border-radius: 8px !important;
+        }
+
+        .editor_full textarea {
+            border: none !important;
+            min-height: 300px !important;
+            padding: 20px !important;
+        }
+
+        .editor__header {
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            display: grid;
+            border-bottom: 1px solid #e8e9ea;
+        }
+
+
+
+        .editor__header h3 {
+            font-size: 14px !important;
+            margin-bottom: 4px !important;
+        }
+
+        .editor__header span {
+            font-size: 22px !important;
+            font-weight: 500 !important;
+        }
+
+        .editor_col {
+            padding: 22px !important;
+        }
+
+        .editor_col:not(:last-child) {
+            border-right: 1px solid #e8e9ea;
+        }
+
+        .form-control:focus {
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="container">
+
+        <div class="col-md-10 mx-auto mt-5">
+
+            <div class="text-center mb-4">
+                <h2>Social Media Post Character Limit</h2>
+            </div>
+
+
+            <div class="editor_full">
+
+                <div class="editor__header">
+
+                    <div class="editor_col">
+                        <h3>Words:</h3>
+                        <span id="words">0</span>
+                    </div>
+
+                    <div class="editor_col">
+                        <h3>Character:</h3>
+                        <span id="charCount">0</span>
+                    </div>
+
+                    <div class="editor_col">
+                        <h3>Facebook:</h3>
+                        <p class="mb-0 data-show"><span id="facebookRemaining">250</span>/250</p>
+
+                        <div class="progress">
+                            <div id="facebookProgressBar" class="progress-bar" role="progressbar" style="width: 100%;"
+                                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <div class="editor_col">
+                        <h3>Twitter:</h3>
+                        <p class="mb-0 data-show"><span id="twitterRemaining">280</span>/280</p>
+
+                        <div class="progress">
+                            <div id="twitterProgressBar" class="progress-bar" role="progressbar" style="width: 100%;"
+                                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+
+                    <div class="editor_col">
+                        <h3>Google:</h3>
+                        <p class="mb-0 data-show"><span id="googleRemaining">300</span>/300</p>
+
+                        <div class="progress">
+                            <div id="googleProgressBar" class="progress-bar" role="progressbar" style="width: 100%;"
+                                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
+                <textarea class="form-control" id="socialMediaPost" rows="5"
+                    placeholder="Type or paste your text"></textarea>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Function to update word count, character count, and remaining characters for Facebook and Twitter
+            function updateCounts() {
+                var text = $('#socialMediaPost').val();
+                // Display the word count
+                var words = text.trim().split(/\s+/).filter(function (word) {
+                    return word.length > 0;
+                });
+                $('#words').text(words.length);
+
+                // Display the character count
+                var charCount = text.length;
+                $('#charCount').text(charCount);
+
+                // Calculate and display the remaining characters for Facebook
+                var remainingFacebookChars = 250 - charCount;
+                $('#facebookRemaining').text(remainingFacebookChars);
+                // Update Facebook progress bar
+                var facebookProgress = (charCount / 250) * 100;
+                $('#facebookProgressBar').css('width', facebookProgress + '%').attr('aria-valuenow', facebookProgress);
+
+                // Calculate and display the remaining characters for Twitter
+                var remainingTwitterChars = 280 - charCount;
+                $('#twitterRemaining').text(remainingTwitterChars);
+                // Update Twitter progress bar
+                var twitterProgress = (charCount / 280) * 100;
+                $('#twitterProgressBar').css('width', twitterProgress + '%').attr('aria-valuenow', twitterProgress);
+
+
+                // Calculate and display the remaining characters for Twitter
+                var remainingGoogleChars = 300 - charCount;
+                $('#googleRemaining').text(remainingGoogleChars);
+                // Update Twitter progress bar
+                var googleProgress = (charCount / 300) * 100;
+                $('#googleProgressBar').css('width', googleProgress + '%').attr('aria-valuenow', googleProgress);
+            }
+
+            // Attach event listener to the textarea
+            $('#socialMediaPost').on('input', function () {
+                updateCounts();
+            });
+
+            // Initial counts
+            updateCounts();
+        });
+    </script>
+
+</body>
+
+</html>
