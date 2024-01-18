@@ -74,12 +74,12 @@
             padding: 10px 20px;
         }
 
-        #clearButton {
+        /* #clearButton {
             border: none !important;
             background: transparent !important;
             color: grey;
             font-size: 15px !important;
-        }
+        } */
 
         button:focus {
             outline: 0 !important;
@@ -112,18 +112,20 @@
         }
 
         ul#wordList {
-            max-height: 350px !important;
+            max-height: 250px !important;
             overflow-y: scroll;
             border-radius: 0 !important;
             margin-top: 0px !important;
         }
 
-        ul#wordList .keyword__item:nth-child(odd) {
+        ul#wordList .keyword__item:nth-child(odd),
+        ul#details .keyword__item:nth-child(odd) {
 
             background-color: #F7F8F9;
         }
 
-        ul#wordList .keyword__item {
+        ul#wordList .keyword__item,
+        ul#details .keyword__item {
             padding: 6px 12px !important;
         }
 
@@ -140,7 +142,8 @@
             border-bottom: 1px solid #e8e9ea;
         }
 
-        .keywordbx ul#wordList li.keyword__item {
+        .keywordbx ul#wordList li.keyword__item,
+        .keywordbx ul#details li.keyword__item {
             border: 0 !important;
 
             display: flex !important;
@@ -148,25 +151,37 @@
             align-items: center !important;
         }
 
-        .keywordbx ul#wordList li.keyword__item:not(:first-child) {
+        .keywordbx ul#wordList li.keyword__item:not(:first-child),
+        .keywordbx ul#details li.keyword__item:not(:first-child) {
             border-top: 1px solid #e8e9ea !important;
         }
 
 
-        .keywordbx ul#wordList li.keyword__item span.word {
+        .keywordbx ul#wordList li.keyword__item span.word,
+        .keywordbx ul#details li.keyword__item span.word {
             word-break: break-word !important;
             overflow-wrap: break-word !important;
             padding-right: 6px !important;
         }
 
-        .keywordbx ul#wordList li.keyword__item span.badge {
-            background-color: #777;
-            color: #FFF;
+        .keywordbx ul#wordList li.keyword__item span.badge,
+        .keywordbx ul#details li.keyword__item span.badge {
+            /* background-color: #777;
+            color: #FFF; */
         }
 
-        .keywordbx ul#wordList li.demtxt {
+        .keywordbx ul#wordList li.demtxt,
+        .keywordbx ul#details li.demtxt {
             padding: 14px !important;
             color: #afb0b2;
+        }
+
+
+        .btn-no {
+            background: transparent !important;
+            border: 0 !important;
+            width: 100% !important;
+            text-align: left !important;
         }
     </style>
 </head>
@@ -187,6 +202,10 @@
 
             <div class="col-md-1">
                 <ul class="side_options">
+
+                    <li><input type="file" id="fileInput" style="display: none;">
+                        <button id="uploadButton"><i class="fa-solid fa-upload"></i></button>
+                    </li>
                     <li><button id="saveButton"><i class="fa-solid fa-download"></i></button></li>
                     <li><button id="clearButton"><i class="fa-solid fa-rotate"></i></button></li>
                 </ul>
@@ -200,12 +219,12 @@
 
                         <div class="editor_col">
                             <h3>Words:</h3>
-                            <span id="words">0</span>
+                            <span class="words">0</span>
                         </div>
 
                         <div class="editor_col">
                             <h3>Character:</h3>
-                            <span id="charCount">0</span>
+                            <span class="charCount">0</span>
                         </div>
 
                         <div class="editor_col">
@@ -255,10 +274,34 @@
             <div class="col-md-3">
 
 
-                <div class="keywordbx">
-                    <h4>KEYWORDS</h4>
-                    <ul id="wordList" class="list-group mt-3"></ul>
+                <div class="keywordbx mb-4">
+                    <button class="btn-no" type="button" data-toggle="collapse" data-target="#multiCollapse2"
+                        aria-expanded="false" aria-controls="multiCollapse2">
+                        <h4><i class="fa-solid fa-wrench"></i> Details</h4>
+                    </button>
+                    <div class="collapse multi-collapse show" id="multiCollapse2">
+                        <ul class="list-group" id="details">
+                            <li class="list-group-item keyword__item">Words: <span class="words">0</span></li>
+                            <li class="list-group-item keyword__item">Paragraphs: <span class="paragraphs">0</span></li>
+
+                            <li class="list-group-item keyword__item">Character: <span class="charCount">0</span></li>
+
+                        </ul>
+                    </div>
                 </div>
+
+                <div class="keywordbx">
+                    <button class="btn-no" type="button" data-toggle="collapse" data-target="#multiCollapse1"
+                        aria-expanded="false" aria-controls="multiCollapse1">
+                        <h4><i class="fa-solid fa-wrench"></i> Keywords</h4>
+                    </button>
+                    <div class="collapse multi-collapse" id="multiCollapse1">
+                        <ul id="wordList" class="list-group mt-3"></ul>
+                    </div>
+                </div>
+
+
+
 
             </div>
 
@@ -273,6 +316,12 @@
 
     <script>
         $(document).ready(function () {
+
+            // var isTextAreaBlank = $('#socialMediaPost').val().trim() === '';
+            // $('#saveButton').prop('disabled', isTextAreaBlank);
+            // // Add or remove the 'disabled' class based on the textarea content
+            // $('#saveButton').toggleClass('disabled', isTextAreaBlank);
+
             // Function to update word count, character count, and remaining characters for Facebook and Twitter
             function updateCounts() {
                 var text = $('#socialMediaPost').val();
@@ -280,7 +329,17 @@
                 var words = text.trim().split(/\s+/).filter(function (word) {
                     return word.length > 0;
                 });
-                $('#words').text(words.length);
+                $('.words').text(words.length);
+
+
+                // Count paragraphs
+                var paragraphs = text.trim().split(/\n\s*/).filter(function (paragraph) {
+                    return paragraph.length > 0;
+                });
+                $('.paragraphs').text(paragraphs.length);
+
+
+
 
                 // Extract unique words and their counts
                 var words = $('#socialMediaPost').val().toLowerCase().match(/\b\w+\b/g) || [];
@@ -323,7 +382,7 @@
 
                 // Display the character count
                 var charCount = text.length;
-                $('#charCount').text(charCount);
+                $('.charCount').text(charCount);
 
                 // Calculate and display the remaining characters for Facebook
                 var remainingFacebookChars = 250 - charCount;
@@ -362,12 +421,18 @@
             // Attach event listener to the textarea
             $('#socialMediaPost').on('input', function () {
                 updateCounts();
+
+                var isTextAreaBlank = $('#socialMediaPost').val().trim() === '';
+                $('#saveButton').prop('disabled', isTextAreaBlank);
+                // Add or remove the 'disabled' class based on the textarea content
+                $('#saveButton').toggleClass('disabled', isTextAreaBlank);
             });
 
             // Attach event listener to the Clear button
             $('#clearButton').on('click', function () {
                 clearTextArea();
             });
+
 
             // Initial counts
             var storedValue = localStorage.getItem('socialMediaPostValue');
@@ -390,6 +455,29 @@
             // Attach event listener to the Save button
             $('#saveButton').on('click', function () {
                 saveToFile();
+            });
+
+
+            // Attach event listener to the Upload button
+            $('#uploadButton').on('click', function () {
+                // Trigger the file input click event
+                $('#fileInput').click();
+            });
+
+            // Add change event listener to handle file selection
+            $('#fileInput').on('change', function (event) {
+                // Read the selected file
+                var file = event.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        // Set the textarea value with the file content
+                        $('#socialMediaPost').val(e.target.result);
+                        // Update counts after setting the text
+                        updateCounts();
+                    };
+                    reader.readAsText(file);
+                }
             });
 
 
