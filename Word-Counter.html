@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Social Media Post Character Limit</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 
     <style>
@@ -18,15 +21,14 @@
             border: none !important;
             min-height: 300px !important;
             padding: 20px !important;
+            border-radius: 16px !important;
         }
 
         .editor__header {
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             display: grid;
             border-bottom: 1px solid #e8e9ea;
         }
-
-
 
         .editor__header h3 {
             font-size: 14px !important;
@@ -49,73 +51,214 @@
         .form-control:focus {
             box-shadow: none !important;
         }
+
+        .progress {
+            height: 6px !important;
+            margin-top: 6px !important;
+        }
+
+        .progress.light1 .progress-bar {
+            background-color: #5ed6e3 !important;
+        }
+
+        .progress.light2 .progress-bar {
+            background-color: #4DDA9E !important;
+        }
+
+        .progress.light3 .progress-bar {
+            background-color: #ADD654 !important;
+        }
+
+        .editor_footer {
+            border-top: 1px solid #e8e9ea;
+            padding: 10px 20px;
+        }
+
+        #clearButton {
+            border: none !important;
+            background: transparent !important;
+            color: grey;
+            font-size: 15px !important;
+        }
+
+        button:focus {
+            outline: 0 !important;
+        }
+
+        .side_options {
+            list-style: none !important;
+            margin: 0px !important;
+            text-align: center !important;
+            padding: 0px !important;
+            border-radius: 8px !important;
+            border: 1px solid #e8e9ea;
+        }
+
+        .side_options li {
+            padding: 12px;
+        }
+
+        .side_options li:not(:last-child) {
+            border-bottom: 1px solid #dfdfdf;
+        }
+
+        .side_options button {
+            border: 0 !important;
+            background: transparent !important;
+        }
+
+        .side_options button i {
+            font-size: 22px !important;
+        }
+
+        ul#wordList {
+            max-height: 350px !important;
+            overflow-y: scroll;
+            border-radius: 0 !important;
+            margin-top: 0px !important;
+        }
+
+        ul#wordList .keyword__item:nth-child(odd) {
+
+            background-color: #F7F8F9;
+        }
+
+        ul#wordList .keyword__item {
+            padding: 6px 12px !important;
+        }
+
+        .keywordbx {
+            border: 1px solid #e8e9ea;
+            border-radius: 8px !important;
+        }
+
+        .keywordbx h4 {
+            font-size: 16px !important;
+            margin-bottom: 0px !important;
+            font-weight: 700;
+            padding: 14px;
+            border-bottom: 1px solid #e8e9ea;
+        }
+
+        .keywordbx ul#wordList li.keyword__item {
+            border: 0 !important;
+
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+
+        .keywordbx ul#wordList li.keyword__item:not(:first-child) {
+            border-top: 1px solid #e8e9ea !important;
+        }
+
+
+        .keywordbx ul#wordList li.keyword__item span.word {
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            padding-right: 6px !important;
+        }
+
+        .keywordbx ul#wordList li.keyword__item span.badge {
+            background-color: #777;
+            color: #FFF;
+        }
+
+        .keywordbx ul#wordList li.demtxt {
+            padding: 14px !important;
+            color: #afb0b2;
+        }
     </style>
 </head>
 
 <body>
 
 
-    <div class="container">
+    <div class="container mt-5">
 
-        <div class="col-md-10 mx-auto mt-5">
+        <div class="text-center mb-4">
+            <h2>Social Media Post Character Limit</h2>
+        </div>
 
-            <div class="text-center mb-4">
-                <h2>Social Media Post Character Limit</h2>
+
+
+        <div class="row">
+
+
+            <div class="col-md-1">
+                <ul class="side_options">
+                    <li><button id="saveButton"><i class="fa-solid fa-download"></i></button></li>
+                    <li><button id="clearButton"><i class="fa-solid fa-rotate"></i></button></li>
+                </ul>
             </div>
 
 
-            <div class="editor_full">
+            <div class="col-md-8">
+                <div class="editor_full">
 
-                <div class="editor__header">
+                    <div class="editor__header">
 
-                    <div class="editor_col">
-                        <h3>Words:</h3>
-                        <span id="words">0</span>
-                    </div>
-
-                    <div class="editor_col">
-                        <h3>Character:</h3>
-                        <span id="charCount">0</span>
-                    </div>
-
-                    <div class="editor_col">
-                        <h3>Facebook:</h3>
-                        <p class="mb-0 data-show"><span id="facebookRemaining">250</span>/250</p>
-
-                        <div class="progress">
-                            <div id="facebookProgressBar" class="progress-bar" role="progressbar" style="width: 100%;"
-                                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="editor_col">
+                            <h3>Words:</h3>
+                            <span id="words">0</span>
                         </div>
-                    </div>
 
-                    <div class="editor_col">
-                        <h3>Twitter:</h3>
-                        <p class="mb-0 data-show"><span id="twitterRemaining">280</span>/280</p>
-
-                        <div class="progress">
-                            <div id="twitterProgressBar" class="progress-bar" role="progressbar" style="width: 100%;"
-                                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="editor_col">
+                            <h3>Character:</h3>
+                            <span id="charCount">0</span>
                         </div>
-                    </div>
+
+                        <div class="editor_col">
+                            <h3>Facebook:</h3>
+
+                            <p class="mb-0 data-show"><span id="facebookRemaining">250</span>/250</p>
+
+                            <div class="progress light1">
+                                <div id="facebookProgressBar" class="progress-bar" role="progressbar"
+                                    style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
 
 
-                    <div class="editor_col">
-                        <h3>Google:</h3>
-                        <p class="mb-0 data-show"><span id="googleRemaining">300</span>/300</p>
-
-                        <div class="progress">
-                            <div id="googleProgressBar" class="progress-bar" role="progressbar" style="width: 100%;"
-                                aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
+
+                        <div class="editor_col">
+                            <h3>Twitter:</h3>
+                            <p class="mb-0 data-show"><span id="twitterRemaining">280</span>/280</p>
+
+                            <div class="progress light2">
+                                <div id="twitterProgressBar" class="progress-bar" role="progressbar"
+                                    style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="editor_col">
+                            <h3>Google:</h3>
+                            <p class="mb-0 data-show"><span id="googleRemaining">300</span>/300</p>
+
+                            <div class="progress light3">
+                                <div id="googleProgressBar" class="progress-bar" role="progressbar" style="width: 100%;"
+                                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+
                     </div>
 
+                    <textarea class="form-control" id="socialMediaPost" rows="5"
+                        placeholder="Type or paste your text"></textarea>
                 </div>
 
+            </div>
+
+            <div class="col-md-3">
 
 
-                <textarea class="form-control" id="socialMediaPost" rows="5"
-                    placeholder="Type or paste your text"></textarea>
-
+                <div class="keywordbx">
+                    <h4>KEYWORDS</h4>
+                    <ul id="wordList" class="list-group mt-3"></ul>
+                </div>
 
             </div>
 
@@ -139,6 +282,45 @@
                 });
                 $('#words').text(words.length);
 
+                // Extract unique words and their counts
+                var words = $('#socialMediaPost').val().toLowerCase().match(/\b\w+\b/g) || [];
+                var wordCounts = {};
+
+                words.forEach(function (word) {
+                    if (wordCounts[word]) {
+                        wordCounts[word]++;
+                    } else {
+                        wordCounts[word] = 1;
+                    }
+                });
+
+                // Calculate total word count
+                var totalWords = words.length;
+
+                // Sort words by count in descending order
+                var sortedWords = Object.keys(wordCounts).sort(function (a, b) {
+                    return wordCounts[b] - wordCounts[a];
+                });
+
+                // Display words appearing more than once in an unordered list
+                var wordList = $('#wordList');
+                wordList.empty();
+
+                if (sortedWords.length === 0) {
+                    var noDataMessage = $('<li class="demtxt">').text('Enter text to display keywords');
+                    wordList.append(noDataMessage);
+                } else {
+                    // Display keywords if available
+                    sortedWords.forEach(function (word) {
+                        var count = wordCounts[word];
+                        var percentage = Math.round((count / totalWords) * 100);
+                        var listItem = $('<li class="list-group-item keyword__item">').html('<span class="word">' + word + '</span> <span class="badge">' + count + ' (' + percentage + '%)</span>');
+                        wordList.append(listItem);
+                    });
+                }
+
+
+
                 // Display the character count
                 var charCount = text.length;
                 $('#charCount').text(charCount);
@@ -157,13 +339,24 @@
                 var twitterProgress = (charCount / 280) * 100;
                 $('#twitterProgressBar').css('width', twitterProgress + '%').attr('aria-valuenow', twitterProgress);
 
-
                 // Calculate and display the remaining characters for Twitter
                 var remainingGoogleChars = 300 - charCount;
                 $('#googleRemaining').text(remainingGoogleChars);
                 // Update Twitter progress bar
                 var googleProgress = (charCount / 300) * 100;
                 $('#googleProgressBar').css('width', googleProgress + '%').attr('aria-valuenow', googleProgress);
+
+                // Save textarea value to localStorage
+                localStorage.setItem('socialMediaPostValue', text);
+            }
+
+            function clearTextArea() {
+                // Clear the textarea
+                $('#socialMediaPost').val('');
+                // Update counts after clearing the text
+                updateCounts();
+                // Clear value from localStorage
+                localStorage.removeItem('socialMediaPostValue');
             }
 
             // Attach event listener to the textarea
@@ -171,9 +364,37 @@
                 updateCounts();
             });
 
+            // Attach event listener to the Clear button
+            $('#clearButton').on('click', function () {
+                clearTextArea();
+            });
+
             // Initial counts
+            var storedValue = localStorage.getItem('socialMediaPostValue');
+            if (storedValue) {
+                $('#socialMediaPost').val(storedValue);
+            }
             updateCounts();
+
+            function saveToFile() {
+                var textToSave = $('#socialMediaPost').val();
+                var blob = new Blob([textToSave], { type: 'text/plain' });
+                var a = document.createElement('a');
+                a.href = window.URL.createObjectURL(blob);
+                a.download = 'imgtype_notes.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            // Attach event listener to the Save button
+            $('#saveButton').on('click', function () {
+                saveToFile();
+            });
+
+
         });
+
     </script>
 
 </body>
