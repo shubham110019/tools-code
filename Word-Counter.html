@@ -208,6 +208,9 @@
                     </li>
                     <li><button id="saveButton"><i class="fa-solid fa-download"></i></button></li>
                     <li><button id="clearButton"><i class="fa-solid fa-rotate"></i></button></li>
+
+                    <li><button id="zoomInButton"><i class="fa-solid fa-search-plus"></i></button></li>
+                    <li><button id="zoomOutButton"><i class="fa-solid fa-search-minus"></i></button></li>
                 </ul>
             </div>
 
@@ -316,11 +319,6 @@
 
     <script>
         $(document).ready(function () {
-
-            // var isTextAreaBlank = $('#socialMediaPost').val().trim() === '';
-            // $('#saveButton').prop('disabled', isTextAreaBlank);
-            // // Add or remove the 'disabled' class based on the textarea content
-            // $('#saveButton').toggleClass('disabled', isTextAreaBlank);
 
             // Function to update word count, character count, and remaining characters for Facebook and Twitter
             function updateCounts() {
@@ -478,6 +476,32 @@
                     };
                     reader.readAsText(file);
                 }
+            });
+
+
+
+            function zoomIn() {
+                var currentSize = parseInt($('#socialMediaPost').css('font-size'));
+                var newSize = currentSize + 2; // You can adjust the increment as needed
+                newSize = Math.min(newSize, 60); // Limit to a maximum of 60px
+                $('#socialMediaPost').css('font-size', newSize + 'px');
+            }
+
+            // Function to handle text zoom out
+            function zoomOut() {
+                var currentSize = parseInt($('#socialMediaPost').css('font-size'));
+                var newSize = currentSize - 2; // You can adjust the decrement as needed
+                newSize = Math.max(newSize, 8); // Limit to a minimum of 8px
+                $('#socialMediaPost').css('font-size', newSize + 'px');
+            }
+            // Attach event listener to the Zoom In button
+            $('#zoomInButton').on('click', function () {
+                zoomIn();
+            });
+
+            // Attach event listener to the Zoom Out button
+            $('#zoomOutButton').on('click', function () {
+                zoomOut();
             });
 
 
