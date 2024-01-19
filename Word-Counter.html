@@ -19,7 +19,7 @@
 
         .editor_full textarea {
             border: none !important;
-            min-height: 300px !important;
+            min-height: 410px !important;
             padding: 20px !important;
             border-radius: 16px !important;
         }
@@ -183,6 +183,49 @@
             width: 100% !important;
             text-align: left !important;
         }
+
+
+        @media (max-width: 991.98px) {
+
+            .side_options {
+                margin-bottom: 24px !important;
+            }
+
+            .main-details {
+                margin-top: 24px !important;
+            }
+
+            ul.side_options {
+                display: table;
+                table-layout: fixed;
+                width: 100% !important;
+            }
+
+            ul.side_options li {
+                display: table-cell !important;
+            }
+
+            .side_options li:not(:last-child) {
+                border-bottom: 0 !important;
+                border-right: 1px solid #dfdfdf !important;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+
+            .editor_col.media-none {
+                display: none !important;
+            }
+
+            .editor_col {
+                padding: 16px !important;
+                text-align: center !important;
+            }
+
+            .editor_full textarea {
+                min-height: 250px !important;
+            }
+        }
     </style>
 </head>
 
@@ -200,7 +243,7 @@
         <div class="row">
 
 
-            <div class="col-md-1">
+            <div class="col-md-12 col-lg-1">
                 <ul class="side_options">
 
                     <li><input type="file" id="fileInput" style="display: none;">
@@ -211,11 +254,13 @@
 
                     <li><button id="zoomInButton"><i class="fa-solid fa-search-plus"></i></button></li>
                     <li><button id="zoomOutButton"><i class="fa-solid fa-search-minus"></i></button></li>
+                    <li><button data-toggle="modal" data-target="#findReplaceShow"><i
+                                class="fa-solid fa-magnifying-glass"></i></button></li>
                 </ul>
             </div>
 
 
-            <div class="col-md-8">
+            <div class="col-md-12 col-lg-8">
                 <div class="editor_full">
 
                     <div class="editor__header">
@@ -230,7 +275,7 @@
                             <span class="charCount">0</span>
                         </div>
 
-                        <div class="editor_col">
+                        <div class="editor_col media-none">
                             <h3>Facebook:</h3>
 
                             <p class="mb-0 data-show"><span id="facebookRemaining">250</span>/250</p>
@@ -244,7 +289,7 @@
 
                         </div>
 
-                        <div class="editor_col">
+                        <div class="editor_col media-none">
                             <h3>Twitter:</h3>
                             <p class="mb-0 data-show"><span id="twitterRemaining">280</span>/280</p>
 
@@ -256,7 +301,7 @@
                         </div>
 
 
-                        <div class="editor_col">
+                        <div class="editor_col media-none">
                             <h3>Google:</h3>
                             <p class="mb-0 data-show"><span id="googleRemaining">300</span>/300</p>
 
@@ -270,11 +315,13 @@
 
                     <textarea class="form-control" id="socialMediaPost" rows="5"
                         placeholder="Type or paste your text"></textarea>
+
+
                 </div>
 
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-12 col-lg-3 main-details">
 
 
                 <div class="keywordbx mb-4">
@@ -289,6 +336,20 @@
 
                             <li class="list-group-item keyword__item">Character: <span class="charCount">0</span></li>
 
+                            <li class="list-group-item keyword__item">Character (no spaces):</h3>
+                                <span class="charCountWithoutSpaces">0</span>
+                            </li>
+
+                            <li class="list-group-item keyword__item">Reading Time: <span class="readingTime">0</span>
+                            </li>
+
+
+                            <li class="list-group-item keyword__item">Speaking Time: <span class="speakingTime">0
+                                    sec</span></li>
+
+
+
+
                         </ul>
                     </div>
                 </div>
@@ -298,7 +359,7 @@
                         aria-expanded="false" aria-controls="multiCollapse1">
                         <h4><i class="fa-solid fa-wrench"></i> Keywords</h4>
                     </button>
-                    <div class="collapse multi-collapse" id="multiCollapse1">
+                    <div class="collapse multi-collapse show" id="multiCollapse1">
                         <ul id="wordList" class="list-group mt-3"></ul>
                     </div>
                 </div>
@@ -313,34 +374,73 @@
     </div>
 
 
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="findReplaceShow" data-backdrop="static" data-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Find and Replace
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="find-replace-section">
+                        <div class="form-group">
+                            <label for="findText">Find:</label>
+                            <input type="text" class="form-control" id="findText">
+                        </div>
+                        <div class="form-group">
+                            <label for="replaceText">Replace:</label>
+                            <input type="text" class="form-control" id="replaceText">
+                        </div>
+
+                    </div>
+
+                    <div id="messShowData"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="findReplaceButton" class="btn btn-primary">Find and Replace</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-        $(document).ready(function () {
+        jQuery(document).ready(function () {
 
             // Function to update word count, character count, and remaining characters for Facebook and Twitter
             function updateCounts() {
-                var text = $('#socialMediaPost').val();
+                var text = jQuery('#socialMediaPost').val();
                 // Display the word count
                 var words = text.trim().split(/\s+/).filter(function (word) {
                     return word.length > 0;
                 });
-                $('.words').text(words.length);
+                jQuery('.words').text(words.length);
 
 
                 // Count paragraphs
                 var paragraphs = text.trim().split(/\n\s*/).filter(function (paragraph) {
                     return paragraph.length > 0;
                 });
-                $('.paragraphs').text(paragraphs.length);
+                jQuery('.paragraphs').text(paragraphs.length);
 
 
 
 
                 // Extract unique words and their counts
-                var words = $('#socialMediaPost').val().toLowerCase().match(/\b\w+\b/g) || [];
+                var words = jQuery('#socialMediaPost').val().toLowerCase().match(/\b\w+\b/g) || [];
                 var wordCounts = {};
 
                 words.forEach(function (word) {
@@ -360,48 +460,85 @@
                 });
 
                 // Display words appearing more than once in an unordered list
-                var wordList = $('#wordList');
+                var wordList = jQuery('#wordList');
                 wordList.empty();
 
                 if (sortedWords.length === 0) {
-                    var noDataMessage = $('<li class="demtxt">').text('Enter text to display keywords');
+                    var noDataMessage = jQuery('<li class="demtxt">').text('Enter text to display keywords');
                     wordList.append(noDataMessage);
                 } else {
                     // Display keywords if available
                     sortedWords.forEach(function (word) {
                         var count = wordCounts[word];
                         var percentage = Math.round((count / totalWords) * 100);
-                        var listItem = $('<li class="list-group-item keyword__item">').html('<span class="word">' + word + '</span> <span class="badge">' + count + ' (' + percentage + '%)</span>');
+                        var listItem = jQuery('<li class="list-group-item keyword__item">').html('<span class="word">' + word + '</span> <span class="badge">' + count + ' (' + percentage + '%)</span>');
                         wordList.append(listItem);
                     });
                 }
 
 
+                // Extract unique words and their counts
+                var wordsWithoutSpaces = text.replace(/\s/g, '');
+                var charCountWithoutSpaces = wordsWithoutSpaces.length;
+
+                // Display the character count without spaces
+                jQuery('.charCountWithoutSpaces').text(charCountWithoutSpaces);
+
+
 
                 // Display the character count
                 var charCount = text.length;
-                $('.charCount').text(charCount);
+                jQuery('.charCount').text(charCount);
 
                 // Calculate and display the remaining characters for Facebook
                 var remainingFacebookChars = 250 - charCount;
-                $('#facebookRemaining').text(remainingFacebookChars);
+                jQuery('#facebookRemaining').text(remainingFacebookChars);
                 // Update Facebook progress bar
                 var facebookProgress = (charCount / 250) * 100;
-                $('#facebookProgressBar').css('width', facebookProgress + '%').attr('aria-valuenow', facebookProgress);
+                jQuery('#facebookProgressBar').css('width', facebookProgress + '%').attr('aria-valuenow', facebookProgress);
 
                 // Calculate and display the remaining characters for Twitter
                 var remainingTwitterChars = 280 - charCount;
-                $('#twitterRemaining').text(remainingTwitterChars);
+                jQuery('#twitterRemaining').text(remainingTwitterChars);
                 // Update Twitter progress bar
                 var twitterProgress = (charCount / 280) * 100;
-                $('#twitterProgressBar').css('width', twitterProgress + '%').attr('aria-valuenow', twitterProgress);
+                jQuery('#twitterProgressBar').css('width', twitterProgress + '%').attr('aria-valuenow', twitterProgress);
 
                 // Calculate and display the remaining characters for Twitter
                 var remainingGoogleChars = 300 - charCount;
-                $('#googleRemaining').text(remainingGoogleChars);
+                jQuery('#googleRemaining').text(remainingGoogleChars);
                 // Update Twitter progress bar
                 var googleProgress = (charCount / 300) * 100;
-                $('#googleProgressBar').css('width', googleProgress + '%').attr('aria-valuenow', googleProgress);
+                jQuery('#googleProgressBar').css('width', googleProgress + '%').attr('aria-valuenow', googleProgress);
+
+
+                // Calculate reading time
+                var readingTime = calculateReadingTime(text);
+
+                // Display reading time in seconds or minutes
+                if (readingTime < 60) {
+                    jQuery('.readingTime').text(readingTime + ' sec');
+                } else {
+                    var readingTimeInMinutes = Math.ceil(readingTime / 60);
+                    jQuery('.readingTime').text(readingTimeInMinutes + ' min');
+                }
+
+
+                // Calculate speaking time based on average speaking rate (words per minute)
+                var speakingRate = 150; // Adjust this rate as needed
+                var totalWords = words.length;
+
+                // Calculate speaking time in seconds
+                var speakingTimeSeconds = Math.ceil((totalWords / speakingRate) * 60);
+
+                // Display speaking time
+                if (speakingTimeSeconds < 60) {
+                    jQuery('.speakingTime').text(speakingTimeSeconds + ' sec');
+                } else {
+                    var speakingTimeMinutes = Math.ceil(speakingTimeSeconds / 60);
+                    jQuery('.speakingTime').text(speakingTimeMinutes + ' min');
+                }
+
 
                 // Save textarea value to localStorage
                 localStorage.setItem('socialMediaPostValue', text);
@@ -409,7 +546,7 @@
 
             function clearTextArea() {
                 // Clear the textarea
-                $('#socialMediaPost').val('');
+                jQuery('#socialMediaPost').val('');
                 // Update counts after clearing the text
                 updateCounts();
                 // Clear value from localStorage
@@ -417,17 +554,17 @@
             }
 
             // Attach event listener to the textarea
-            $('#socialMediaPost').on('input', function () {
+            jQuery('#socialMediaPost').on('input', function () {
                 updateCounts();
 
-                var isTextAreaBlank = $('#socialMediaPost').val().trim() === '';
-                $('#saveButton').prop('disabled', isTextAreaBlank);
+                var isTextAreaBlank = jQuery('#socialMediaPost').val().trim() === '';
+                jQuery('#saveButton').prop('disabled', isTextAreaBlank);
                 // Add or remove the 'disabled' class based on the textarea content
-                $('#saveButton').toggleClass('disabled', isTextAreaBlank);
+                jQuery('#saveButton').toggleClass('disabled', isTextAreaBlank);
             });
 
             // Attach event listener to the Clear button
-            $('#clearButton').on('click', function () {
+            jQuery('#clearButton').on('click', function () {
                 clearTextArea();
             });
 
@@ -435,12 +572,12 @@
             // Initial counts
             var storedValue = localStorage.getItem('socialMediaPostValue');
             if (storedValue) {
-                $('#socialMediaPost').val(storedValue);
+                jQuery('#socialMediaPost').val(storedValue);
             }
             updateCounts();
 
             function saveToFile() {
-                var textToSave = $('#socialMediaPost').val();
+                var textToSave = jQuery('#socialMediaPost').val();
                 var blob = new Blob([textToSave], { type: 'text/plain' });
                 var a = document.createElement('a');
                 a.href = window.URL.createObjectURL(blob);
@@ -451,26 +588,26 @@
             }
 
             // Attach event listener to the Save button
-            $('#saveButton').on('click', function () {
+            jQuery('#saveButton').on('click', function () {
                 saveToFile();
             });
 
 
             // Attach event listener to the Upload button
-            $('#uploadButton').on('click', function () {
+            jQuery('#uploadButton').on('click', function () {
                 // Trigger the file input click event
-                $('#fileInput').click();
+                jQuery('#fileInput').click();
             });
 
             // Add change event listener to handle file selection
-            $('#fileInput').on('change', function (event) {
+            jQuery('#fileInput').on('change', function (event) {
                 // Read the selected file
                 var file = event.target.files[0];
                 if (file) {
                     var reader = new FileReader();
                     reader.onload = function (e) {
                         // Set the textarea value with the file content
-                        $('#socialMediaPost').val(e.target.result);
+                        jQuery('#socialMediaPost').val(e.target.result);
                         // Update counts after setting the text
                         updateCounts();
                     };
@@ -479,30 +616,92 @@
             });
 
 
+            // Add event listener to the Find and Replace button
+            jQuery('#findReplaceButton').on('click', function () {
+                var findText = jQuery('#findText').val();
+                var replaceText = jQuery('#replaceText').val();
+                var currentText = jQuery('#socialMediaPost').val();
+
+                // Check if the replaceText is blank
+                if (replaceText.trim() === '') {
+                    // Perform find operation without replacement
+                    var numOccurrences = (currentText.match(new RegExp('\\b' + findText + '\\b', 'g')) || []).length;
+                    // alert(numOccurrences + ' occurrence(s) found.');
+
+                    jQuery('#messShowData').html(numOccurrences + ' occurrence(s) found.');
+                    return;
+                }
+
+                // Create a regular expression with the global and word boundaries flags
+                var regex = new RegExp('\\b' + findText + '\\b', 'g');
+
+                // Perform find and replace for whole words
+                var newText = currentText.replace(regex, function (match, offset, input) {
+                    // Count the number of replacements made
+                    return replaceText;
+                });
+
+                // Check if any replacements were made
+                if (newText !== currentText) {
+                    // Update the textarea with the modified text
+                    jQuery('#socialMediaPost').val(newText);
+
+                    // Update counts after find and replace
+                    updateCounts();
+
+                    // Display the number of replacements made
+                    var numReplacements = (newText.match(new RegExp(replaceText, 'g')) || []).length;
+
+
+                    jQuery('#messShowData').html(numReplacements + ' occurrence(s) replaced.');
+                } else {
+                    // Display a message if no replacements were made
+
+                    jQuery('#messShowData').html('<span class="err">No occurrences found. No replacement performed.</span>');
+                }
+            });
+
+
 
             function zoomIn() {
-                var currentSize = parseInt($('#socialMediaPost').css('font-size'));
+                var currentSize = parseInt(jQuery('#socialMediaPost').css('font-size'));
                 var newSize = currentSize + 2; // You can adjust the increment as needed
                 newSize = Math.min(newSize, 60); // Limit to a maximum of 60px
-                $('#socialMediaPost').css('font-size', newSize + 'px');
+                jQuery('#socialMediaPost').css('font-size', newSize + 'px');
             }
 
             // Function to handle text zoom out
             function zoomOut() {
-                var currentSize = parseInt($('#socialMediaPost').css('font-size'));
+                var currentSize = parseInt(jQuery('#socialMediaPost').css('font-size'));
                 var newSize = currentSize - 2; // You can adjust the decrement as needed
                 newSize = Math.max(newSize, 8); // Limit to a minimum of 8px
-                $('#socialMediaPost').css('font-size', newSize + 'px');
+                jQuery('#socialMediaPost').css('font-size', newSize + 'px');
             }
             // Attach event listener to the Zoom In button
-            $('#zoomInButton').on('click', function () {
+            jQuery('#zoomInButton').on('click', function () {
                 zoomIn();
             });
 
             // Attach event listener to the Zoom Out button
-            $('#zoomOutButton').on('click', function () {
+            jQuery('#zoomOutButton').on('click', function () {
                 zoomOut();
             });
+
+
+            function calculateReadingTime(text) {
+                // Assuming an average reading speed of 200 words per minute
+                var wordsPerMinute = 200;
+
+                // Calculate the total words in the text
+                var totalWords = text.trim().split(/\s+/).filter(function (word) {
+                    return word.length > 0;
+                }).length;
+
+                // Calculate the reading time in seconds
+                var readingTimeSeconds = Math.ceil((totalWords / wordsPerMinute) * 60);
+
+                return readingTimeSeconds;
+            }
 
 
         });
