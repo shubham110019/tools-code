@@ -622,23 +622,25 @@
                 var replaceText = jQuery('#replaceText').val();
                 var currentText = jQuery('#socialMediaPost').val();
 
-                // Check if the replaceText is blank
-                if (replaceText.trim() === '') {
-                    // Perform find operation without replacement
-                    var numOccurrences = (currentText.match(new RegExp('\\b' + findText + '\\b', 'g')) || []).length;
-                    // alert(numOccurrences + ' occurrence(s) found.');
+                if (findText.trim() === '' && replaceText.trim() === '') {
+                    jQuery('#messShowData').html('Warning! Please, fill both fields.');
+                    return;
+                }
 
+                // Case-insensitive regular expression with global and word boundaries flags
+                var regex = new RegExp('\\b' + escapeRegExp(findText) + '\\b', 'gi');
+
+                // Perform find operation without replacement
+                if (replaceText.trim() === '') {
+                    var numOccurrences = (currentText.match(regex) || []).length;
                     jQuery('#messShowData').html(numOccurrences + ' occurrence(s) found.');
                     return;
                 }
 
-                // Create a regular expression with the global and word boundaries flags
-                var regex = new RegExp('\\b' + findText + '\\b', 'g');
-
-                // Perform find and replace for whole words
+                // Perform case-insensitive find and replace for whole words
                 var newText = currentText.replace(regex, function (match, offset, input) {
-                    // Count the number of replacements made
-                    return replaceText;
+                    // Preserve the case of the matched word
+                    return preserveCase(match, replaceText);
                 });
 
                 // Check if any replacements were made
@@ -650,16 +652,35 @@
                     updateCounts();
 
                     // Display the number of replacements made
-                    var numReplacements = (newText.match(new RegExp(replaceText, 'g')) || []).length;
-
-
+                    var numReplacements = (newText.match(new RegExp(escapeRegExp(replaceText), 'gi')) || []).length;
                     jQuery('#messShowData').html(numReplacements + ' occurrence(s) replaced.');
                 } else {
                     // Display a message if no replacements were made
-
                     jQuery('#messShowData').html('<span class="err">No occurrences found. No replacement performed.</span>');
                 }
             });
+
+            // Function to escape special characters in a string for use in a regular expression
+            function escapeRegExp(string) {
+                return string.replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&");
+            }
+
+            // Function to preserve the case of a word based on the replacement word
+            function preserveCase(match, replacement) {
+                if (match.toUpperCase() === match) {
+                    // If the matched word is all uppercase, make the replacement uppercase
+                    return replacement.toUpperCase();
+                } else if (match.toLowerCase() === match) {
+                    // If the matched word is all lowercase, make the replacement lowercase
+                    return replacement.toLowerCase();
+                } else if (match[0].toUpperCase() === match[0]) {
+                    // If the matched word is capitalized, make the replacement capitalized
+                    return replacement.charAt(0).toUpperCase() + replacement.slice(1);
+                } else {
+                    // Preserve the case as is
+                    return replacement;
+                }
+            }
 
 
 
