@@ -256,6 +256,8 @@
                     <li><button id="zoomOutButton"><i class="fa-solid fa-search-minus"></i></button></li>
                     <li><button data-toggle="modal" data-target="#findReplaceShow"><i
                                 class="fa-solid fa-magnifying-glass"></i></button></li>
+
+                    <li><button id="convertToAudioButton"><i class="fa-solid fa-volume-low"></i></button></li>
                 </ul>
             </div>
 
@@ -315,6 +317,8 @@
 
                     <textarea class="form-control" id="socialMediaPost" rows="5"
                         placeholder="Type or paste your text"></textarea>
+
+
 
 
                 </div>
@@ -724,6 +728,29 @@
                 return readingTimeSeconds;
             }
 
+
+            jQuery('#convertToAudioButton').on('click', function () {
+                var textToConvert = jQuery('#socialMediaPost').val();
+
+                // Check if the Web Speech API is supported by the browser
+                if ('speechSynthesis' in window) {
+                    // Create a SpeechSynthesisUtterance object
+                    var utterance = new SpeechSynthesisUtterance(textToConvert);
+
+                    // Clear the voice configuration
+                    utterance.voice = null;
+
+                    // Adjust rate and pitch for clearer audio
+                    utterance.rate = 1.2; // You can experiment with different rate values
+                    utterance.pitch = 1.0; // You can experiment with different pitch values
+
+                    // Use the SpeechSynthesis API to convert text to speech
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    // Display a message if Web Speech API is not supported
+                    alert('Sorry, your browser does not support the Web Speech API.');
+                }
+            });
 
         });
 
