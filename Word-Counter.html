@@ -318,9 +318,6 @@
                     <textarea class="form-control" id="socialMediaPost" rows="5"
                         placeholder="Type or paste your text"></textarea>
 
-
-
-
                 </div>
 
             </div>
@@ -423,6 +420,8 @@
 
     <script>
         jQuery(document).ready(function () {
+
+            jQuery('#convertToAudioButton').prop('disabled', true);
 
             // Function to update word count, character count, and remaining characters for Facebook and Twitter
             function updateCounts() {
@@ -565,6 +564,7 @@
                 jQuery('#saveButton').prop('disabled', isTextAreaBlank);
                 // Add or remove the 'disabled' class based on the textarea content
                 jQuery('#saveButton').toggleClass('disabled', isTextAreaBlank);
+                jQuery('#convertToAudioButton').prop('disabled', isTextAreaBlank);
             });
 
             // Attach event listener to the Clear button
@@ -741,7 +741,7 @@
                     utterance.voice = null;
 
                     // Adjust rate and pitch for clearer audio
-                    utterance.rate = 1.2; // You can experiment with different rate values
+                    utterance.rate = 1.1; // You can experiment with different rate values
                     utterance.pitch = 1.0; // You can experiment with different pitch values
 
                     // Use the SpeechSynthesis API to convert text to speech
