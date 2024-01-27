@@ -21,6 +21,7 @@
                 <tr>
                     <th>File Name</th>
                     <th>Size</th>
+                    <th>Download</th>
                 </tr>
             </thead>
             <tbody id="fileTableBody">
@@ -53,7 +54,10 @@
 
                         // Display contents in the table
                         contents.forEach(function (relativePath, file) {
-                            $('#fileTableBody').append('<tr><td>' + file.name + '</td><td>' + file._data.uncompressedSize + ' bytes</td></tr>');
+                            var fileSize = file._data.uncompressedSize;
+                            var downloadButton = '<button class="btn btn-success" onclick="downloadFile(\'' + file.name + '\')">Download</button>';
+                            var row = '<tr><td>' + file.name + '</td><td>' + fileSize + ' bytes</td><td>' + downloadButton + '</td></tr>';
+                            $('#fileTableBody').append(row);
                         });
                     })
                     .catch(function (error) {
@@ -61,6 +65,19 @@
                     });
             }
         });
+
+        function downloadFile(fileName) {
+            var zip = new JSZip();
+            zip.file(fileName, fileName); // Assume the file content is its name
+            zip.generateAsync({ type: 'blob' })
+                .then(function (content) {
+                    // Create a link element to trigger the download
+                    var link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = fileName;
+                    link.click();
+                });
+        }
     </script>
 
 </body>
