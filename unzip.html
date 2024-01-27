@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zip File Explorer</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2>Zip File Explorer</h2>
+        <input type="file" id="zipFileInput" class="form-control mb-3">
+        <button id="unzipButton" class="btn btn-primary">Unzip</button>
+
+        <table class="table mt-3">
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody id="fileTableBody">
+                <!-- Table content will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <!-- JSZip CDN link -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+
+    <!-- JS to handle file input and unzip -->
+    <script>
+        document.getElementById('unzipButton').addEventListener('click', function () {
+            var fileInput = document.getElementById('zipFileInput');
+            var file = fileInput.files[0];
+
+            if (file) {
+                var zip = new JSZip();
+
+                zip.loadAsync(file)
+                    .then(function (contents) {
+                        // Clear existing table content
+                        $('#fileTableBody').empty();
+
+                        // Display contents in the table
+                        contents.forEach(function (relativePath, file) {
+                            $('#fileTableBody').append('<tr><td>' + file.name + '</td><td>' + file._data.uncompressedSize + ' bytes</td></tr>');
+                        });
+                    })
+                    .catch(function (error) {
+                        console.error('Error reading zip file:', error);
+                    });
+            }
+        });
+    </script>
+
+</body>
+
+</html>
