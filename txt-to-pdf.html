@@ -5,24 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
-    <title>Advanced Text to PDF Converter</title>
+    <title>File Information and PDF Converter</title>
 </head>
 
 <body>
 
     <div class="container mt-5">
-        <h2 class="mb-4">Advanced Text to PDF Converter</h2>
+        <h2 class="mb-4">File Information and PDF Converter</h2>
 
         <input type="file" id="txtFileInput" class="mb-3">
         <button class="btn btn-primary" onclick="convertToPDF()">Convert to PDF</button>
 
         <div class="mt-3" id="pdfPreviewSection" style="display: none;">
-            <h4>File Name:</h4>
-            <p id="fileName"></p>
+            <h4>File Information:</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>File Size</th>
+                        <th>File Type</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="fileInfoTableBody">
+                    <!-- File information will be displayed here -->
+                </tbody>
+            </table>
+
             <h4>Preview PDF:</h4>
             <iframe id="pdfPreview" width="100%" height="500px"></iframe>
             <br>
-            <a id="downloadLink" class="btn btn-success" onclick="downloadPDF()">Download PDF</a>
             <button class="btn btn-info" onclick="openInNewTab()">Open PDF in New Tab</button>
         </div>
     </div>
@@ -35,7 +47,7 @@
 
     <script>
         let generatedBlob = null;
-        let uploadedFileName = null;
+        let uploadedFile = null;
 
         function convertToPDF() {
             const fileInput = document.getElementById('txtFileInput');
@@ -46,7 +58,7 @@
                 return;
             }
 
-            uploadedFileName = file.name;
+            uploadedFile = file;
 
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -86,20 +98,39 @@
                     URL.revokeObjectURL(url);
                 };
 
-                // Display the uploaded file name
-                const fileNameElement = document.getElementById('fileName');
-                fileNameElement.textContent = `Uploaded File Name: ${uploadedFileName}`;
+                // Display file information in the table
+                displayFileInfo();
             });
+        }
+
+        function displayFileInfo() {
+            const fileInfoTableBody = document.getElementById('fileInfoTableBody');
+            const fileSizeInKB = uploadedFile.size / 1024; // Convert file size to KB
+            const fileSize = fileSizeInKB.toFixed(2) + ' KB';
+            const fileType = uploadedFile.type;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${uploadedFile.name}</td>
+                <td>${fileSize}</td>
+                <td>${fileType}</td>
+                <td><button class="btn btn-success" onclick="downloadPDF()">Download PDF</button></td>
+            `;
+
+            fileInfoTableBody.appendChild(row);
         }
 
         function downloadPDF() {
             if (generatedBlob) {
-                const downloadLink = document.getElementById('downloadLink');
+                const downloadLink = document.createElement('a');
                 const url = URL.createObjectURL(generatedBlob);
 
                 // Set the download link with the uploaded file name and PDF extension
                 downloadLink.href = url;
-                downloadLink.download = uploadedFileName.replace(/\.[^/.]+$/, ".pdf");
+                downloadLink.download = uploadedFile.name.replace(/\.[^/.]+$/, ".pdf");
+
+                // Simulate click on the link to trigger download
+                downloadLink.click();
 
                 // Ensure the link is not reused, and revoke the URL after a short delay
                 setTimeout(() => {
