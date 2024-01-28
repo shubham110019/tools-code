@@ -30,6 +30,7 @@
                     <th>File Name</th>
                     <th>File Size</th>
                     <th>File Type</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody id="fileDetailsBody"></tbody>
@@ -55,25 +56,30 @@
             return size.toFixed(2) + " " + units[i];
         }
 
+        var zip; // Declare zip variable outside functions
+
         function compressAndCreateDownloadButton() {
             var files = $('#fileInput')[0].files;
             var fileDetailsBody = $('#fileDetailsBody');
             var downloadButtonContainer = $('#downloadButtonContainer');
+
+            zip = new JSZip(); // Initialize zip
 
             if (files.length === 0) {
                 alert('Please select files for compression.');
                 return;
             }
 
-            var zip = new JSZip();
-
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
-                zip.file(file.name, file);
-
-                // Display file details in the table
+                var rowId = 'row_' + i;
                 var formattedSize = formatFileSize(file.size);
-                fileDetailsBody.append('<tr><td>' + file.name + '</td><td>' + formattedSize + '</td><td>' + file.type + '</td></tr>');
+
+                // Display file details in the table with a Cancel button
+                fileDetailsBody.append('<tr id="' + rowId + '"><td>' + file.name + '</td><td>' + formattedSize + '</td><td>' + file.type + '</td><td><button class="btn btn-danger" onclick="cancelFile(\'' + rowId + '\')">Cancel</button></td></tr>');
+
+                // Add the file to the zip archive
+                zip.file(file.name, file);
             }
 
             zip.generateAsync({ type: 'blob' })
@@ -82,6 +88,29 @@
                     downloadButton.attr('href', URL.createObjectURL(content));
                     downloadButton.attr('download', 'compressed_files.rar');
                     downloadButtonContainer.html(downloadButton);
+                });
+        }
+
+        function cancelFile(rowId) {
+            // Remove the row from the table
+            $('#' + rowId).remove();
+
+            // Reinitialize zip
+            zip = new JSZip();
+
+            // Iterate through the remaining files and add them to the zip
+            $('#fileDetailsBody tr').each(function () {
+                var fileName = $(this).find('td:first').text();
+                zip.file(fileName, $('#fileInput')[0].files[$(this).index()]);
+            });
+
+            // Regenerate the compressed file
+            zip.generateAsync({ type: 'blob' })
+                .then(function (content) {
+                    var downloadButton = $('<a class="btn btn-success" role="button">Download Compressed Files</a>');
+                    downloadButton.attr('href', URL.createObjectURL(content));
+                    downloadButton.attr('download', 'compressed_files.rar');
+                    $('#downloadButtonContainer').html(downloadButton);
                 });
         }
     </script>
