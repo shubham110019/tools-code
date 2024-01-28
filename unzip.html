@@ -21,6 +21,7 @@
                 <tr>
                     <th>File Name</th>
                     <th>Size</th>
+                    <th>Type</th> <!-- Added file type column -->
                     <th>Download</th>
                 </tr>
             </thead>
@@ -29,7 +30,7 @@
             </tbody>
         </table>
 
-        <button id="downloadZipButton" class="btn btn-warning mt-3">Download Entire Zip</button>
+        <button id="downloadZipButton" class="btn btn-warning mt-3">Download Entire Unzip</button>
     </div>
 
     <!-- Bootstrap JS and jQuery -->
@@ -41,7 +42,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js"></script>
 
-    <!-- JS to handle file input and unzip -->
     <!-- JS to handle file input and unzip -->
     <script>
         function formatFileSize(size) {
@@ -69,9 +69,23 @@
                         // Display contents in the table
                         contents.forEach(function (relativePath, file) {
                             var fileSize = formatFileSize(file._data.uncompressedSize);
+                            var fileType = getFileType(file.name);
                             var downloadButton = '<button class="btn btn-success" onclick="downloadSingleFile(\'' + file.name + '\')">Download</button>';
-                            var row = '<tr><td>' + file.name + '</td><td>' + fileSize + '</td><td>' + downloadButton + '</td></tr>';
-                            $('#fileTableBody').append(row);
+
+                            // Check if the file is an image and include a thumbnail
+                            if (fileType === 'Image') {
+                                // Access the image content
+                                file.async("base64")
+                                    .then(function (base64Content) {
+                                        var thumbnail = '<img src="data:image/png;base64,' + base64Content + '" alt="Thumbnail" style="max-width: 40px; max-height: 40px;margin-right: 6px !important;">';
+                                        var row = '<tr><td>' + thumbnail + file.name + '</td><td>' + fileSize + '</td><td>' + fileType + '</td><td>' + downloadButton + '</td></tr>';
+                                        $('#fileTableBody').append(row);
+                                    });
+                            } else {
+                                var thumbnail = ''; // Empty string for non-image files
+                                var row = '<tr><td>' + thumbnail + file.name + '</td><td>' + fileSize + '</td><td>' + fileType + '</td><td>' + downloadButton + '</td></tr>';
+                                $('#fileTableBody').append(row);
+                            }
                         });
                     })
                     .catch(function (error) {
@@ -89,7 +103,7 @@
 
                 reader.onload = function (event) {
                     var base64Data = event.target.result.split(',')[1];
-                    downloadFile('full_zip.zip', base64Data);
+                    downloadFile('full_unzip.zip', base64Data);
                 };
 
                 reader.readAsDataURL(file);
@@ -113,13 +127,58 @@
         }
 
         function downloadFile(fileName, content) {
-            // Create a temporary link and trigger the download
-            var link = document.createElement('a');
-            link.href = 'data:application/zip;base64,' + content;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Convert base64 to binary
+            var binaryData = atob(content);
+
+            // Create a Blob object from the binary data
+            var blob = new Blob([new Uint8Array(binaryData.length).map(function (_, i) { return binaryData.charCodeAt(i); })], { type: 'application/zip' });
+
+            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                // For IE and Edge browsers
+                window.navigator.msSaveOrOpenBlob(blob, fileName);
+            } else {
+                // For other browsers
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function getFileType(fileName) {
+            var ext = fileName.split('.').pop().toLowerCase();
+
+            switch (ext) {
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'webp':
+                    return 'Image';
+                case 'txt':
+                    return 'Text';
+                case 'pdf':
+                    return 'PDF Document';
+                case 'doc':
+                case 'docx':
+                    return 'Word Document';
+                case 'xls':
+                case 'xlsx':
+                    return 'Excel Spreadsheet';
+                case 'ppt':
+                case 'pptx':
+                    return 'PowerPoint Presentation';
+                case 'mp3':
+                    return 'Audio';
+                case 'mp4':
+                case 'avi':
+                case 'mkv':
+                    return 'Video';
+                // Add more file types as needed
+                default:
+                    return 'Unknown';
+            }
         }
     </script>
 
