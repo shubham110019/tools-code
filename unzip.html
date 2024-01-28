@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zip File Explorer</title>
+    <title>Base64 Zip File Explorer</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
@@ -12,7 +12,7 @@
 <body>
 
     <div class="container mt-5">
-        <h2>Zip File Explorer</h2>
+        <h2>Base64 Zip File Explorer</h2>
         <input type="file" id="zipFileInput" class="form-control mb-3">
         <button id="unzipButton" class="btn btn-primary">Unzip</button>
 
@@ -28,6 +28,8 @@
                 <!-- Table content will be dynamically added here -->
             </tbody>
         </table>
+
+        <button id="downloadZipButton" class="btn btn-warning mt-3">Download Entire Zip</button>
     </div>
 
     <!-- Bootstrap JS and jQuery -->
@@ -37,9 +39,21 @@
 
     <!-- JSZip CDN link -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js"></script>
 
     <!-- JS to handle file input and unzip -->
+    <!-- JS to handle file input and unzip -->
     <script>
+        function formatFileSize(size) {
+            var units = ["B", "KB", "MB", "GB", "TB"];
+            var i = 0;
+            while (size >= 1024 && i < units.length - 1) {
+                size /= 1024;
+                i++;
+            }
+            return size.toFixed(2) + " " + units[i];
+        }
+
         document.getElementById('unzipButton').addEventListener('click', function () {
             var fileInput = document.getElementById('zipFileInput');
             var file = fileInput.files[0];
@@ -54,9 +68,9 @@
 
                         // Display contents in the table
                         contents.forEach(function (relativePath, file) {
-                            var fileSize = file._data.uncompressedSize;
-                            var downloadButton = '<button class="btn btn-success" onclick="downloadFile(\'' + file.name + '\')">Download</button>';
-                            var row = '<tr><td>' + file.name + '</td><td>' + fileSize + ' bytes</td><td>' + downloadButton + '</td></tr>';
+                            var fileSize = formatFileSize(file._data.uncompressedSize);
+                            var downloadButton = '<button class="btn btn-success" onclick="downloadSingleFile(\'' + file.name + '\')">Download</button>';
+                            var row = '<tr><td>' + file.name + '</td><td>' + fileSize + '</td><td>' + downloadButton + '</td></tr>';
                             $('#fileTableBody').append(row);
                         });
                     })
@@ -66,19 +80,49 @@
             }
         });
 
-        function downloadFile(fileName) {
+        document.getElementById('downloadZipButton').addEventListener('click', function () {
+            var fileInput = document.getElementById('zipFileInput');
+            var file = fileInput.files[0];
+
+            if (file) {
+                var reader = new FileReader();
+
+                reader.onload = function (event) {
+                    var base64Data = event.target.result.split(',')[1];
+                    downloadFile('full_zip.zip', base64Data);
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function downloadSingleFile(fileName) {
+            var fileInput = document.getElementById('zipFileInput');
             var zip = new JSZip();
-            zip.file(fileName, fileName); // Assume the file content is its name
-            zip.generateAsync({ type: 'blob' })
+
+            zip.loadAsync(fileInput.files[0])
+                .then(function (contents) {
+                    return contents.file(fileName).async("base64");
+                })
                 .then(function (content) {
-                    // Create a link element to trigger the download
-                    var link = document.createElement('a');
-                    link.href = URL.createObjectURL(content);
-                    link.download = fileName;
-                    link.click();
+                    downloadFile(fileName, content);
+                })
+                .catch(function (error) {
+                    console.error('Error reading file:', error);
                 });
         }
+
+        function downloadFile(fileName, content) {
+            // Create a temporary link and trigger the download
+            var link = document.createElement('a');
+            link.href = 'data:application/zip;base64,' + content;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
+
 
 </body>
 
