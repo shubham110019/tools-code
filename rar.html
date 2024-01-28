@@ -63,13 +63,16 @@
             var fileDetailsBody = $('#fileDetailsBody');
             var downloadButtonContainer = $('#downloadButtonContainer');
 
-            zip = new JSZip(); // Initialize zip
+            if (!zip) {
+                zip = new JSZip(); // Initialize zip if not exists
+            }
 
             if (files.length === 0) {
                 alert('Please select files for compression.');
                 return;
             }
 
+            // Add new files to the existing zip
             for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 var rowId = 'row_' + i;
