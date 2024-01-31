@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upscaler</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        #originalImagePreview {
+            display: none !important;
+        }
+
+        table img {
+            max-width: 100px !important;
+        }
+
+        #loader {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2 class="mb-4">Image Upscaler</h2>
+
+        <!-- Image Upload Section -->
+        <div class="mb-4">
+            <label for="imageUpload">Choose an image to upscale:</label>
+            <input type="file" id="imageUpload" accept="image/*">
+        </div>
+
+        <!-- Display Original Image Preview -->
+        <div id="originalImagePreview" class="mb-4"></div>
+
+        <!-- Bootstrap Loader -->
+        <div id="loader" class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+
+        <!-- Display Table for Upscaled Images -->
+        <table class="table table-bordered" id="upscaledTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Upscaled Factor</th>
+                    <th>Preview</th>
+                    <th>Width x Height</th>
+                    <th>Image Size</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="upscaledTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Listen for changes in the file input
+        document.getElementById('imageUpload').addEventListener('change', function () {
+            upscaleAndDisplay();
+        });
+
+        function formatFileSize(size) {
+            var units = ["B", "KB", "MB", "GB", "TB"];
+            var i = 0;
+            while (size >= 1024 && i < units.length - 1) {
+                size /= 1024;
+                i++;
+            }
+            return size.toFixed(2) + " " + units[i];
+        }
+
+        function upscaleAndDisplay() {
+            const input = document.getElementById('imageUpload');
+            const originalImagePreview = document.getElementById('originalImagePreview');
+            const upscaledTable = document.getElementById('upscaledTable');
+            const upscaledTableBody = document.getElementById('upscaledTableBody');
+            const loader = document.getElementById('loader');
+
+            if (!input.files || !input.files[0]) {
+                alert('Please select an image first.');
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const originalImg = new Image();
+                originalImg.onload = function () {
+                    // Display original image preview only once
+                    originalImagePreview.innerHTML = '';
+                    originalImagePreview.appendChild(originalImg);
+
+                    // Show the loader while processing
+                    loader.style.display = 'inline-block';
+
+                    // Clear previous table rows
+                    upscaledTableBody.innerHTML = '';
+
+                    // Simulate a delay (you can replace this with your actual upscaling logic)
+                    setTimeout(function () {
+                        // Loop through upscale factors (2x, 3x, 4x, 5x)
+                        for (let factor = 2; factor <= 5; factor++) {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+
+                            // Set canvas dimensions based on the factor
+                            canvas.width = originalImg.width * factor;
+                            canvas.height = originalImg.height * factor;
+
+                            // Draw the upscaled image on the canvas
+                            ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+
+                            // Create an image element for display
+                            const upscaledImg = new Image();
+                            upscaledImg.src = canvas.toDataURL('image/png');
+
+                            // Create a row for the table
+                            const row = upscaledTableBody.insertRow();
+                            const cellNumber = row.insertCell(0);
+                            const cellFactor = row.insertCell(1);
+                            const cellPreview = row.insertCell(2);
+                            const cellSize = row.insertCell(3);
+                            const cellFileSize = row.insertCell(4);
+                            const cellAction = row.insertCell(5);
+
+                            // Set content for each cell
+                            cellNumber.innerHTML = factor - 1; // Display 1, 2, 3, 4 instead of 2, 3, 4, 5
+                            cellFactor.innerHTML = `${factor}x`;
+                            cellPreview.appendChild(upscaledImg);
+
+                            // Get the dimensions of the upscaled image
+                            const dimensions = `${canvas.width}x${canvas.height}`;
+                            cellSize.innerHTML = dimensions;
+
+                            // Get the size of the upscaled image
+                            const imageSize = formatFileSize(canvas.toDataURL('image/png').length);
+                            cellFileSize.innerHTML = imageSize;
+
+                            // Create a download button for each row
+                            const downloadButton = document.createElement('button');
+                            downloadButton.className = 'btn btn-success';
+                            downloadButton.innerHTML = `Download ${factor}x Image`;
+
+                            // Attach the download functionality to the button
+                            downloadButton.addEventListener('click', function () {
+                                const link = document.createElement('a');
+                                link.href = canvas.toDataURL('image/png');
+                                link.download = `upscaled_image_${factor}x.png`;
+                                link.click();
+                            });
+
+                            cellAction.appendChild(downloadButton);
+                        }
+
+                        // Hide the loader after processing
+                        loader.style.display = 'none';
+
+                        // Show the table
+                        upscaledTable.style.display = 'table';
+                    }, 1000); // Simulated delay of 1000 milliseconds (1 second)
+                };
+
+                originalImg.src = e.target.result;
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+
+    </script>
+
+</body>
+
+</html>
