@@ -49,8 +49,8 @@
                     <th>#</th>
                     <th>Upscaled Factor</th>
                     <th>Preview</th>
-                    <th>Width x Height</th>
-                    <th>Image Size</th>
+                    <th>Dimensions</th>
+                    <th>File Size</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -64,14 +64,23 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-        // Listen for changes in the file input
-        document.getElementById('imageUpload').addEventListener('change', function () {
-            upscaleAndDisplay();
-        });
+        // Constants
+        const IMAGE_UPSCALE_FACTORS = [2, 3, 4, 5, 6];
 
+        // Elements
+        const input = document.getElementById('imageUpload');
+        const originalImagePreview = document.getElementById('originalImagePreview');
+        const upscaledTable = document.getElementById('upscaledTable');
+        const upscaledTableBody = document.getElementById('upscaledTableBody');
+        const loader = document.getElementById('loader');
+
+        // Event listener for file input change
+        input.addEventListener('change', upscaleAndDisplay);
+
+        // Function to format file size
         function formatFileSize(size) {
-            var units = ["B", "KB", "MB", "GB", "TB"];
-            var i = 0;
+            const units = ["B", "KB", "MB", "GB", "TB"];
+            let i = 0;
             while (size >= 1024 && i < units.length - 1) {
                 size /= 1024;
                 i++;
@@ -79,15 +88,20 @@
             return size.toFixed(2) + " " + units[i];
         }
 
-        function upscaleAndDisplay() {
-            const input = document.getElementById('imageUpload');
-            const originalImagePreview = document.getElementById('originalImagePreview');
-            const upscaledTable = document.getElementById('upscaledTable');
-            const upscaledTableBody = document.getElementById('upscaledTableBody');
-            const loader = document.getElementById('loader');
+        // Function to display image dimensions as "Width x Height"
+        function formatImageDimensions(width, height) {
+            return `${width} x ${height}`;
+        }
 
+        // Function to handle errors
+        function showError(message) {
+            alert(`Error: ${message}`);
+        }
+
+        // Function to upscale and display images
+        function upscaleAndDisplay() {
             if (!input.files || !input.files[0]) {
-                alert('Please select an image first.');
+                showError('Please select an image first.');
                 return;
             }
 
@@ -106,10 +120,12 @@
                     // Clear previous table rows
                     upscaledTableBody.innerHTML = '';
 
-                    // Simulate a delay (you can replace this with your actual upscaling logic)
+                    // Simulate a delay (replace with actual upscaling logic)
                     setTimeout(function () {
-                        // Loop through upscale factors (2x, 3x, 4x, 5x)
-                        for (let factor = 2; factor <= 5; factor++) {
+                        // Loop through upscale factors
+                        for (let i = 0; i < IMAGE_UPSCALE_FACTORS.length; i++) {
+                            const factor = IMAGE_UPSCALE_FACTORS[i];
+
                             const canvas = document.createElement('canvas');
                             const ctx = canvas.getContext('2d');
 
@@ -129,18 +145,18 @@
                             const cellNumber = row.insertCell(0);
                             const cellFactor = row.insertCell(1);
                             const cellPreview = row.insertCell(2);
-                            const cellSize = row.insertCell(3);
+                            const cellDimensions = row.insertCell(3);
                             const cellFileSize = row.insertCell(4);
                             const cellAction = row.insertCell(5);
 
                             // Set content for each cell
-                            cellNumber.innerHTML = factor - 1; // Display 1, 2, 3, 4 instead of 2, 3, 4, 5
+                            cellNumber.innerHTML = i + 1; // Display 1, 2, 3, 4 instead of 2, 3, 4, 5
                             cellFactor.innerHTML = `${factor}x`;
                             cellPreview.appendChild(upscaledImg);
 
                             // Get the dimensions of the upscaled image
-                            const dimensions = `${canvas.width}x${canvas.height}`;
-                            cellSize.innerHTML = dimensions;
+                            const dimensions = formatImageDimensions(canvas.width, canvas.height);
+                            cellDimensions.innerHTML = dimensions;
 
                             // Get the size of the upscaled image
                             const imageSize = formatFileSize(canvas.toDataURL('image/png').length);
@@ -171,6 +187,10 @@
                 };
 
                 originalImg.src = e.target.result;
+            };
+
+            reader.onerror = function () {
+                showError('Error reading the image file.');
             };
 
             reader.readAsDataURL(input.files[0]);
