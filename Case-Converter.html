@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Converter</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+  <style>
+    .img_txtbox {
+      background: #f6f8fa;
+      border: 1px solid #e3e7ed;
+      border-radius: 8px !important;
+    }
+
+    .img_txtbox textarea {
+      background: transparent !important;
+      border: none !important;
+      padding: 20px !important;
+      height: 250px !important;
+    }
+
+    .form-control:focus {
+      box-shadow: none !important;
+    }
+
+    .img_bottom {
+      display: flex;
+      justify-content: end;
+      padding: 8px !important;
+    }
+
+    .img_bottom ul {
+      margin: 0 !important;
+      padding: 0 !important;
+      list-style: none !important;
+    }
+
+    .img_bottom ul li {
+      display: inline-block;
+    }
+
+    .img_bottom ul li button {
+      background-color: #fff;
+      border: 1px solid #e3e7ed;
+      width: 30px;
+      height: 30px;
+      border-radius: 4px !important;
+    }
+
+    .img_controw {
+      font-size: 14px !important;
+      font-weight: 600 !important;
+      display: flex;
+      justify-content: space-between !important;
+      margin-top: 8px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .img_controw p {
+      margin-bottom: 0px !important;
+    }
+
+    .btn-line {
+      border: 1.5px solid #0a083b !important;
+      font-size: 16px !important;
+      background: transparent !important;
+      padding: 6px 14px !important;
+      display: inline-block !important;
+      border-radius: 4px !important;
+
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container mt-5">
+    <h1 class="text-center">Case Converter</h1>
+    <div class="row mt-4">
+      <div class="col-md-10 mx-auto">
+
+
+        <div class="img_txtbox">
+          <textarea id="inputText" class="form-control" rows="5" placeholder="Enter text to convert"></textarea>
+
+          <div class="img_bottom">
+
+            <ul>
+              <li><button id="clearText"><i class="fa-solid fa-text-slash"></i></button></li>
+              <li><button id="copyText"><i class="fa-regular fa-copy"></i></button></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="img_controw">
+          <div class="left">
+            <p>Character Count: <span id="charCount">0</span></p>
+          </div>
+          <div class="right">
+            <p>Word Count: <span id="wordCount">0</span></p>
+          </div>
+        </div>
+
+
+        <div class="mt-3">
+          <button id="convertSentenceCase" class="btn-line">Sentence Case</button>
+          <button id="convertLowerCase" class="btn-line">lower case</button>
+          <button id="convertUpperCase" class="btn-line">UPPER CASE</button>
+          <button id="convertCapitalizeWord" class="btn-line">Capitalize Word</button>
+          <button id="convertAlternateCase" class="btn-line">aLtErNaTe cAsE</button>
+          <button id="convertToggleCase" class="btn-line">tOGGLE cASE</button>
+          <button id="convertTitleCase" class="btn-line">Title Case</button>
+
+        </div>
+        <div class="mt-3">
+
+
+
+          <p id="copyError" style="color: red; display: none;">Textarea is empty!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('#inputText').on('input', function () {
+        updateCounts();
+      });
+
+      $('#convertSentenceCase').click(function () {
+        convertText('sentence');
+      });
+      $('#convertLowerCase').click(function () {
+        convertText('lower');
+      });
+      $('#convertUpperCase').click(function () {
+        convertText('upper');
+      });
+      $('#convertCapitalizeWord').click(function () {
+        convertText('capitalize');
+      });
+      $('#convertAlternateCase').click(function () {
+        convertText('alternate');
+      });
+      $('#convertToggleCase').click(function () {
+        convertText('toggle');
+      });
+      $('#convertTitleCase').click(function () {
+        convertText('title');
+      });
+      $('#clearText').click(function () {
+        $('#inputText').val('');
+        updateCounts();
+      });
+
+      $('#copyText').click(function () {
+        copyToClipboard();
+      });
+
+      function updateCounts() {
+        var input = $('#inputText').val();
+        var charCount = input.length;
+        var wordCount = input.trim().split(/\s+/).filter(Boolean).length;
+        $('#charCount').text(charCount);
+        $('#wordCount').text(wordCount);
+      }
+
+      function convertText(type) {
+        var input = $('#inputText').val();
+        var output;
+        switch (type) {
+          case 'sentence':
+            output = input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+            break;
+          case 'lower':
+            output = input.toLowerCase();
+            break;
+          case 'upper':
+            output = input.toUpperCase();
+            break;
+          case 'capitalize':
+            output = input.toLowerCase().replace(/\b\w/g, function (txt) { return txt.toUpperCase(); });
+            break;
+          case 'alternate':
+            output = input.replace(/./g, function (c, i) {
+              return i % 2 === 0 ? c.toLowerCase() : c.toUpperCase();
+            });
+            break;
+          case 'toggle':
+            output = input.replace(/./g, function (c) {
+              return c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase();
+            });
+            break;
+          case 'title':
+            output = input.toLowerCase().replace(/\b\w+/g, function (txt, offset, str) {
+              var minorWords = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'if', 'in', 'nor', 'of', 'on', 'or', 'so', 'the', 'to', 'up', 'yet'];
+              var specialCases = {
+                'html': 'HTML',
+                'bootstrap': 'Bootstrap'
+              };
+              var isFirstWord = offset === 0 || str[offset - 1].match(/[:.;!?]/);
+              return specialCases[txt.toLowerCase()] || (minorWords.includes(txt.toLowerCase()) && !isFirstWord ? txt : txt.charAt(0).toUpperCase() + txt.substr(1));
+            });
+            break;
+          default:
+            output = input;
+            break;
+        }
+        $('#inputText').val(output);
+        updateCounts();
+      }
+
+      function copyToClipboard() {
+        var inputText = $('#inputText').val();
+        if (inputText.trim() === '') {
+          $('#copyError').show();
+          return;
+        }
+        $('#copyError').hide();
+        var textArea = document.createElement("textarea");
+        textArea.value = inputText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+    });
+  </script>
+
+</body>
+
+</html>
