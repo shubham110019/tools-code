@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Compressor</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2>Image Compressor</h2>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+        <br>
+        <br>
+        <button class="btn btn-primary" onclick="compressImages()">Compress Images</button>
+        <button class="btn btn-danger" id="clearBtn" style="display: none;" onclick="clearImages()">Clear
+            Images</button>
+
+        <button class="btn btn-secondary" style="display:none;" id="downloadAllBtn"
+            onclick="downloadAllImages()">Download All as Zip</button>
+        <br>
+        <br>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Preview</th>
+                    <th>Original Size</th>
+                    <th>Compressed Size</th>
+                    <th>Download</th>
+                </tr>
+            </thead>
+            <tbody id="imageTableBody">
+            </tbody>
+        </table>
+
+        <div id="loader" class="spinner-border text-primary" role="status" style="display: none;">
+            <span class="sr-only">Loading...</span>
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-canvas-to-blob/3.14.0/js/canvas-to-blob.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/javascript-canvas-to-blob/3.15.1/js/canvas-to-blob.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script>
+        function compressImages() {
+            // Show loader when compressing images
+            document.getElementById('loader').style.display = 'inline-block';
+
+            var fileInput = document.getElementById('fileInput');
+            var files = fileInput.files;
+
+            if (!files || files.length === 0) {
+                alert('Please select image files.');
+                // Hide loader if no files are selected
+                document.getElementById('loader').style.display = 'none';
+                return;
+            }
+
+            var totalSize = 0;
+            var images = [];
+            var zip = new JSZip();
+            var count = 0;
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var img = new Image();
+                var reader = new FileReader();
+                reader.onload = (function (file) {
+                    return function (e) {
+                        img.src = e.target.result;
+                        img.onload = function () {
+                            var canvas = document.createElement('canvas');
+                            var ctx = canvas.getContext('2d');
+
+                            // Ensure maximum width and height
+                            var maxWidth = 1200;
+                            var maxHeight = 700;
+                            var width = img.width;
+                            var height = img.height;
+                            if (width > maxWidth || height > maxHeight) {
+                                if (width / height > maxWidth / maxHeight) {
+                                    width *= maxWidth / width;
+                                    height *= maxWidth / width;
+                                } else {
+                                    width *= maxHeight / height;
+                                    height *= maxHeight / height;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+
+                            ctx.drawImage(img, 0, 0, width, height);
+                            canvas.toBlob(function (blob) {
+                                // Compress image to ensure it's under 100KB
+                                var quality = 0.9;
+                                var maxSize = 100 * 1024; // 100KB
+                                while (blob.size > maxSize && quality > 0) {
+                                    canvas.toBlob(function (blob) {
+                                        quality -= 0.1;
+                                    }, file.type, quality);
+                                }
+
+                                totalSize += blob.size;
+                                var newName = file.name.replace(/\.[^/.]+$/, "") + "_100kb" + file.name.substring(file.name.lastIndexOf('.'));
+                                var compressedFile = new File([blob], newName, { type: file.type });
+                                images.push({ name: file.name, blob: blob });
+
+                                var downloadLink = document.createElement('a');
+                                downloadLink.href = URL.createObjectURL(compressedFile);
+                                downloadLink.download = newName;
+                                downloadLink.innerText = 'Download';
+
+                                var preview = document.createElement('img');
+                                preview.src = URL.createObjectURL(blob);
+                                preview.className = 'image-preview';
+
+                                var sizeOld = document.createElement('td');
+                                sizeOld.innerText = "Original Size: " + (file.size / 1024).toFixed(2) + ' KB';
+
+                                var size = document.createElement('td');
+                                size.innerText = (compressedFile.size / 1024).toFixed(2) + ' KB';
+
+                                var download = document.createElement('td');
+                                download.appendChild(downloadLink);
+
+                                var row = document.createElement('tr');
+                                var previewCell = document.createElement('td');
+                                previewCell.appendChild(preview);
+
+                                row.appendChild(previewCell);
+                                // row.appendChild(name);
+                                row.appendChild(sizeOld);
+                                row.appendChild(size);
+                                row.appendChild(download);
+
+                                var tableBody = document.getElementById('imageTableBody');
+                                tableBody.appendChild(row);
+
+                                count++;
+
+                                if (count === files.length) {
+                                    if (totalSize > 100 * 1024) {
+                                        document.getElementById('downloadAllBtn').style.display = 'block';
+                                    }
+                                    // Hide loader when done compressing images
+                                    document.getElementById('loader').style.display = 'none';
+                                    // Show clear button after image conversion
+                                    document.getElementById('clearBtn').style.display = 'inline-block';
+                                }
+                            }, file.type, 0.5); // Adjust compression quality here
+                        };
+                    };
+                })(file);
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearImages() {
+            // Clear the file input
+            document.getElementById('fileInput').value = "";
+            // Clear the image table
+            document.getElementById('imageTableBody').innerHTML = "";
+            // Hide the clear button
+            document.getElementById('clearBtn').style.display = 'none';
+            // Hide the download all button
+            document.getElementById('downloadAllBtn').style.display = 'none';
+        }
+
+        function downloadAllImages() {
+            var zip = new JSZip();
+            var images = document.querySelectorAll('.image-preview');
+            images.forEach(function (img, index) {
+                var blobUrl = img.src;
+                fetch(blobUrl)
+                    .then(response => response.blob())
+                    .then(function (blob) {
+                        var filename = "image_" + index + "_100kb" + blobUrl.substring(blobUrl.lastIndexOf('.'));
+                        zip.file(filename, blob);
+                        if (index === images.length - 1) {
+                            zip.generateAsync({ type: "blob" }).then(function (content) {
+                                saveAs(content, "images.zip");
+                            });
+                        }
+                    });
+            });
+        }
+
+
+    </script>
+
+</body>
+
+</html>
