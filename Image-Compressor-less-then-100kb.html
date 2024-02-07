@@ -156,12 +156,15 @@
 
                                 if (count === files.length) {
                                     if (totalSize > 100 * 1024) {
-                                        document.getElementById('downloadAllBtn').style.display = 'block';
+                                        document.getElementById('downloadAllBtn').style.display = 'inline-block';
                                     }
                                     // Hide loader when done compressing images
                                     document.getElementById('loader').style.display = 'none';
                                     // Show clear button after image conversion
                                     document.getElementById('clearBtn').style.display = 'inline-block';
+
+                                    document.getElementById('datatable').style.display = 'inline-block';
+
                                 }
                             }, file.type, 0.5); // Adjust compression quality here
                         };
@@ -194,22 +197,75 @@
 
         function downloadAllImages() {
             var zip = new JSZip();
-            var images = document.querySelectorAll('.image-preview');
-            images.forEach(function (img, index) {
-                var blobUrl = img.src;
-                fetch(blobUrl)
-                    .then(response => response.blob())
-                    .then(function (blob) {
-                        var filename = "image_" + index + "_100kb" + blobUrl.substring(blobUrl.lastIndexOf('.'));
-                        zip.file(filename, blob);
-                        if (index === images.length - 1) {
-                            zip.generateAsync({ type: "blob" }).then(function (content) {
-                                saveAs(content, "images.zip");
-                            });
-                        }
-                    });
-            });
+            var images = document.getElementById('fileInput').files;
+
+            if (!images || images.length === 0) {
+                alert('Please select image files.');
+                return;
+            }
+
+            var folder = zip.folder("images"); // Create a folder for the images
+
+            var count = 0;
+            for (var i = 0; i < images.length; i++) {
+                var file = images[i];
+                var img = new Image();
+                var reader = new FileReader();
+                reader.onload = (function (file) {
+                    return function (e) {
+                        img.src = e.target.result;
+                        img.onload = function () {
+                            var canvas = document.createElement('canvas');
+                            var ctx = canvas.getContext('2d');
+
+                            // Ensure maximum width and height
+                            var maxWidth = 1200;
+                            var maxHeight = 700;
+                            var width = img.width;
+                            var height = img.height;
+                            if (width > maxWidth || height > maxHeight) {
+                                if (width / height > maxWidth / maxHeight) {
+                                    width *= maxWidth / width;
+                                    height *= maxWidth / width;
+                                } else {
+                                    width *= maxHeight / height;
+                                    height *= maxHeight / height;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+
+                            ctx.drawImage(img, 0, 0, width, height);
+                            canvas.toBlob(function (blob) {
+                                // Compress image to ensure it's under 100KB
+                                var quality = 0.9;
+                                var maxSize = 100 * 1024; // 100KB
+                                while (blob.size > maxSize && quality > 0) {
+                                    canvas.toBlob(function (blob) {
+                                        quality -= 0.1;
+                                    }, file.type, quality);
+                                }
+
+                                var newName = file.name.replace(/\.[^/.]+$/, "") + "_100kb" + file.name.substring(file.name.lastIndexOf('.'));
+                                folder.file(newName, blob); // Add compressed image to the folder
+
+                                count++;
+
+                                if (count === images.length) {
+                                    zip.generateAsync({ type: "blob" }).then(function (content) {
+                                        saveAs(content, "images.zip");
+                                    });
+                                }
+                            }, file.type, 0.5); // Adjust compression quality here
+                        };
+                    };
+                })(file);
+                reader.readAsDataURL(file);
+            }
         }
+
+
+
 
 
     </script>
