@@ -131,10 +131,10 @@
                                 preview.className = 'image-preview';
 
                                 var sizeOld = document.createElement('td');
-                                sizeOld.innerText = "Original Size: " + (file.size / 1024).toFixed(2) + ' KB';
+                                sizeOld.innerText = formatFileSize(file.size);
 
                                 var size = document.createElement('td');
-                                size.innerText = (compressedFile.size / 1024).toFixed(2) + ' KB';
+                                size.innerText = formatFileSize(compressedFile.size);
 
                                 var download = document.createElement('td');
                                 download.appendChild(downloadLink);
@@ -180,6 +180,16 @@
             document.getElementById('clearBtn').style.display = 'none';
             // Hide the download all button
             document.getElementById('downloadAllBtn').style.display = 'none';
+        }
+
+        function formatFileSize(size) {
+            var units = ["B", "KB", "MB", "GB", "TB"];
+            var i = 0;
+            while (size >= 1024 && i < units.length - 1) {
+                size /= 1024;
+                i++;
+            }
+            return size.toFixed(2) + " " + units[i];
         }
 
         function downloadAllImages() {
