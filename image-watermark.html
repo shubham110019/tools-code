@@ -44,7 +44,7 @@
                     <label for="positionSelect">Select Watermark Position:</label>
                     <select class="form-control" id="positionSelect" onchange="updatePreview()">
                         <option>select one</option>
-                        <option value="top-left" selected>Top Left</option>
+                        <option value="top-left">Top Left</option>
                         <option value="top-center">Top Center</option>
                         <option value="top-right">Top Right</option>
                         <option value="center-left">Center Left</option>
@@ -86,7 +86,8 @@
 
         function updatePreview() {
             var positionSelect = document.getElementById('positionSelect');
-            var position = positionSelect.value;
+            // var position = positionSelect.value;
+            var position = positionSelect.value || 'top-left'; // Set default position to top-left
 
             var imageInput = document.getElementById('imageUpload');
             var image = imageInput.files[0];
@@ -138,6 +139,7 @@
                 var scaledHeight = watermarkObj.height * watermarkSize;
 
                 var x, y;
+
                 switch (position) {
                     case 'top-left':
                         x = 0;
@@ -198,7 +200,7 @@
             var watermark = watermarkInput.files[0];
 
             var positionSelect = document.getElementById('positionSelect');
-            var position = positionSelect.value;
+            var position = positionSelect.value || 'top-left'; // Set default position to top-left
 
             var opacityInput = document.getElementById('opacityInput');
             var opacity = parseFloat(opacityInput.value);
@@ -225,6 +227,7 @@
                 var scaledHeight = watermarkObj.height * watermarkSize;
 
                 var x, y;
+
                 switch (position) {
                     case 'top-left':
                         x = 0;
@@ -311,6 +314,10 @@
         });
 
         $('#watermarkSize').change(function () {
+            updatePreview();
+        });
+
+        $('#watermarkUpload').change(function () {
             updatePreview();
         });
 
