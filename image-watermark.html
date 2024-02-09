@@ -15,7 +15,7 @@
 
         <div class="row">
 
-            <div class="col-md-6">
+            <div class="col-md-7">
 
                 <!-- Image Preview -->
                 <div class="form-group previewimgbox">
@@ -25,7 +25,7 @@
 
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-5">
 
                 <!-- Image Upload -->
                 <div class="form-group">
@@ -44,7 +44,7 @@
                     <label for="positionSelect">Select Watermark Position:</label>
                     <select class="form-control" id="positionSelect" onchange="updatePreview()">
                         <option>select one</option>
-                        <option value="top-left">Top Left</option>
+                        <option value="top-left" selected>Top Left</option>
                         <option value="top-center">Top Center</option>
                         <option value="top-right">Top Right</option>
                         <option value="center-left">Center Left</option>
@@ -56,38 +56,18 @@
                     </select>
                 </div>
 
-
-                <!-- Watermark Space Inputs -->
-                <div class="form-group">
-                    <label for="topSpace">Top Space (px):</label>
-                    <input type="number" class="form-control" id="topSpace" placeholder="Enter top space"
-                        onchange="updatePreview()">
-                </div>
-
-                <div class="form-group">
-                    <label for="leftSpace">Left Space (px):</label>
-                    <input type="number" class="form-control" id="leftSpace" placeholder="Enter left space"
-                        onchange="updatePreview()">
-                </div>
-
-                <div class="form-group">
-                    <label for="rightSpace">Right Space (px):</label>
-                    <input type="number" class="form-control" id="rightSpace" placeholder="Enter right space"
-                        onchange="updatePreview()">
-                </div>
-
-                <div class="form-group">
-                    <label for="bottomSpace">Bottom Space (px):</label>
-                    <input type="number" class="form-control" id="bottomSpace" placeholder="Enter bottom space"
-                        onchange="updatePreview()">
-                </div>
-
                 <div class="form-group">
                     <label for="opacityInput">Watermark Opacity:</label>
                     <input type="range" class="form-control-range" id="opacityInput" min="0" max="1" step="0.1"
                         value="1" onchange="updatePreview()">
                 </div>
 
+
+                <div class="form-group">
+                    <label for="watermarkSize">Watermark Size:</label>
+                    <input type="range" class="form-control-range" id="watermarkSize" min="0.5" max="2" step="0.1"
+                        value="1" onchange="updatePreview()">
+                </div>
 
                 <!-- Download Button -->
                 <button class="btn btn-primary" onclick="addWatermark()">Add Watermark and Download</button>
@@ -114,24 +94,16 @@
             var watermarkInput = document.getElementById('watermarkUpload');
             var watermark = watermarkInput.files[0];
 
-            // Get opacity value
             var opacityInput = document.getElementById('opacityInput');
             var opacity = parseFloat(opacityInput.value);
 
-            // Get space values
-            var topSpace = parseInt(document.getElementById('topSpace').value) || 0;
-            var leftSpace = parseInt(document.getElementById('leftSpace').value) || 0;
-            var rightSpace = parseInt(document.getElementById('rightSpace').value) || 0;
-            var bottomSpace = parseInt(document.getElementById('bottomSpace').value) || 0;
+            var watermarkSizeInput = document.getElementById('watermarkSize');
+            var watermarkSize = parseFloat(watermarkSizeInput.value);
 
-            // Get the imagePreview element
             var imagePreview = document.getElementById('imagePreview');
-
-            // Create or get the previewCanvas element
             var previewCanvas = document.getElementById('previewCanvas');
 
             if (!image || !imagePreview.src) {
-                // If no image is selected or no image preview is available, remove the canvas
                 if (previewCanvas) {
                     previewCanvas.remove();
                 }
@@ -139,7 +111,6 @@
             }
 
             if (!previewCanvas) {
-                // Use the imagePreview dimensions to create the canvas
                 previewCanvas = document.createElement('canvas');
                 previewCanvas.id = 'previewCanvas';
                 previewCanvas.className = 'img-fluid';
@@ -159,105 +130,100 @@
                 previewCanvas.width = imageObj.width;
                 previewCanvas.height = imageObj.height;
 
-                // Draw the original image
                 previewContext.drawImage(imageObj, 0, 0, previewCanvas.width, previewCanvas.height);
 
-                // Set the opacity of the watermark
                 previewContext.globalAlpha = opacity;
 
-                // Draw the watermark on top based on the selected position
+                var scaledWidth = watermarkObj.width * watermarkSize;
+                var scaledHeight = watermarkObj.height * watermarkSize;
+
                 var x, y;
                 switch (position) {
                     case 'top-left':
-                        x = leftSpace;
-                        y = topSpace;
+                        x = 0;
+                        y = 0;
                         break;
                     case 'top-center':
-                        x = (previewCanvas.width - watermarkObj.width) / 2;
-                        y = topSpace;
+                        x = (previewCanvas.width - scaledWidth) / 2;
+                        y = 0;
                         break;
                     case 'top-right':
-                        x = previewCanvas.width - watermarkObj.width - rightSpace;
-                        y = topSpace;
+                        x = previewCanvas.width - scaledWidth;
+                        y = 0;
                         break;
                     case 'center-left':
-                        x = leftSpace;
-                        y = (previewCanvas.height - watermarkObj.height) / 2;
+                        x = 0;
+                        y = (previewCanvas.height - scaledHeight) / 2;
                         break;
                     case 'center':
-                        x = (previewCanvas.width - watermarkObj.width) / 2;
-                        y = (previewCanvas.height - watermarkObj.height) / 2;
+                        x = (previewCanvas.width - scaledWidth) / 2;
+                        y = (previewCanvas.height - scaledHeight) / 2;
                         break;
                     case 'center-right':
-                        x = previewCanvas.width - watermarkObj.width - rightSpace;
-                        y = (previewCanvas.height - watermarkObj.height) / 2;
+                        x = previewCanvas.width - scaledWidth;
+                        y = (previewCanvas.height - scaledHeight) / 2;
                         break;
                     case 'bottom-left':
-                        x = leftSpace;
-                        y = previewCanvas.height - watermarkObj.height - bottomSpace;
+                        x = 0;
+                        y = previewCanvas.height - scaledHeight;
                         break;
                     case 'bottom-center':
-                        x = (previewCanvas.width - watermarkObj.width) / 2;
-                        y = previewCanvas.height - watermarkObj.height - bottomSpace;
+                        x = (previewCanvas.width - scaledWidth) / 2;
+                        y = previewCanvas.height - scaledHeight;
                         break;
                     case 'bottom-right':
-                        x = previewCanvas.width - watermarkObj.width - rightSpace;
-                        y = previewCanvas.height - watermarkObj.height - bottomSpace;
+                        x = previewCanvas.width - scaledWidth;
+                        y = previewCanvas.height - scaledHeight;
                         break;
                     default:
-                        x = leftSpace;
-                        y = topSpace;
+                        x = 0;
+                        y = 0;
                         break;
                 }
 
-                previewContext.drawImage(watermarkObj, x, y, watermarkObj.width, watermarkObj.height);
+                previewContext.drawImage(watermarkObj, x, y, scaledWidth, scaledHeight);
 
-                // Reset the globalAlpha back to 1 for future drawings
                 previewContext.globalAlpha = 1;
 
-                // Display the canvas and hide the image preview
                 previewCanvas.style.display = 'block';
                 imagePreview.style.display = 'none';
             });
         }
 
         function addWatermark() {
-            // Get uploaded image
             var imageInput = document.getElementById('imageUpload');
             var image = imageInput.files[0];
 
-            // Get watermark image
             var watermarkInput = document.getElementById('watermarkUpload');
             var watermark = watermarkInput.files[0];
 
-            // Get selected position
             var positionSelect = document.getElementById('positionSelect');
             var position = positionSelect.value;
 
-            // Get opacity value
             var opacityInput = document.getElementById('opacityInput');
             var opacity = parseFloat(opacityInput.value);
 
-            // Create a canvas to draw images
+            var watermarkSizeInput = document.getElementById('watermarkSize');
+            var watermarkSize = parseFloat(watermarkSizeInput.value);
+
             var canvas = document.createElement('canvas');
             var context = canvas.getContext('2d');
 
-            // Load the image and watermark asynchronously
             Promise.all([
                 loadImage(image),
                 loadImage(watermark)
             ]).then(([imageObj, watermarkObj]) => {
-                // Set canvas size
                 canvas.width = imageObj.width;
                 canvas.height = imageObj.height;
 
-                // Draw original image
                 context.drawImage(imageObj, 0, 0, canvas.width, canvas.height);
 
-                // Set the opacity of the watermark
                 context.globalAlpha = opacity;
 
-                // Draw watermark on selected position
+                // Resize the watermark image according to the selected size
+                var scaledWidth = watermarkObj.width * watermarkSize;
+                var scaledHeight = watermarkObj.height * watermarkSize;
+
                 var x, y;
                 switch (position) {
                     case 'top-left':
@@ -265,84 +231,61 @@
                         y = 0;
                         break;
                     case 'top-center':
-                        x = (canvas.width - watermarkObj.width) / 2;
+                        x = (canvas.width - scaledWidth) / 2;
                         y = 0;
                         break;
                     case 'top-right':
-                        x = canvas.width - watermarkObj.width;
+                        x = canvas.width - scaledWidth;
                         y = 0;
                         break;
                     case 'center-left':
                         x = 0;
-                        y = (canvas.height - watermarkObj.height) / 2;
+                        y = (canvas.height - scaledHeight) / 2;
                         break;
                     case 'center':
-                        x = (canvas.width - watermarkObj.width) / 2;
-                        y = (canvas.height - watermarkObj.height) / 2;
+                        x = (canvas.width - scaledWidth) / 2;
+                        y = (canvas.height - scaledHeight) / 2;
                         break;
                     case 'center-right':
-                        x = canvas.width - watermarkObj.width;
-                        y = (canvas.height - watermarkObj.height) / 2;
+                        x = canvas.width - scaledWidth;
+                        y = (canvas.height - scaledHeight) / 2;
                         break;
                     case 'bottom-left':
                         x = 0;
-                        y = canvas.height - watermarkObj.height;
+                        y = canvas.height - scaledHeight;
                         break;
                     case 'bottom-center':
-                        x = (canvas.width - watermarkObj.width) / 2;
-                        y = canvas.height - watermarkObj.height;
+                        x = (canvas.width - scaledWidth) / 2;
+                        y = canvas.height - scaledHeight;
                         break;
                     case 'bottom-right':
-                        x = canvas.width - watermarkObj.width;
-                        y = canvas.height - watermarkObj.height;
+                        x = canvas.width - scaledWidth;
+                        y = canvas.height - scaledHeight;
                         break;
-                    // Add more cases for additional positions as needed
-                    // ...
                     default:
-                        // Default to bottom-right if position is not specified
-                        x = canvas.width - watermarkObj.width;
-                        y = canvas.height - watermarkObj.height;
+                        x = 0;
+                        y = 0;
                         break;
                 }
 
+                context.drawImage(watermarkObj, x, y, scaledWidth, scaledHeight);
 
-                // Use the space values in your calculations when drawing the watermark
-                var topSpace = parseInt(document.getElementById('topSpace').value) || 0;
-                var leftSpace = parseInt(document.getElementById('leftSpace').value) || 0;
-                var rightSpace = parseInt(document.getElementById('rightSpace').value) || 0;
-                var bottomSpace = parseInt(document.getElementById('bottomSpace').value) || 0;
-
-                // Adjust x and y coordinates based on space values
-                x += leftSpace;
-                y += topSpace;
-                x = Math.max(x, leftSpace);
-                y = Math.max(y, topSpace);
-                var adjustedWidth = watermarkObj.width - leftSpace - rightSpace;
-                var adjustedHeight = watermarkObj.height - topSpace - bottomSpace;
-
-
-                context.drawImage(watermarkObj, x, y, watermarkObj.width, watermarkObj.height);
-
-                // Reset the globalAlpha back to 1 for future drawings
                 context.globalAlpha = 1;
 
-                // Hide the image preview and show the canvas
                 var imagePreview = document.getElementById('imagePreview');
                 var previewCanvas = document.getElementById('previewCanvas');
                 imagePreview.style.display = 'none';
                 previewCanvas.style.display = 'block';
 
-                // Create a link to download the watermarked image
                 var link = document.createElement('a');
                 link.download = 'watermarked_image.png';
                 link.href = canvas.toDataURL('image/png');
 
-                // Trigger a click on the link to initiate the download
                 link.click();
             });
         }
 
-        // Helper function to load an image asynchronously
+
         function loadImage(file) {
             return new Promise((resolve) => {
                 var reader = new FileReader();
@@ -357,17 +300,17 @@
             });
         }
 
-        // Preview the selected image
         $('#imageUpload').change(function () {
             var input = this;
             var url = URL.createObjectURL(input.files[0]);
             $('#imagePreview').attr('src', url);
-
-            // Show the image preview and hide the canvas
             var imagePreview = document.getElementById('imagePreview');
             var previewCanvas = document.getElementById('previewCanvas');
             imagePreview.style.display = 'block';
+            updatePreview();
+        });
 
+        $('#watermarkSize').change(function () {
             updatePreview();
         });
 
