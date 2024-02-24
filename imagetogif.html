@@ -167,11 +167,12 @@
                 var gif = new GIF({
                     workers: 2,
                     quality: quality,
-                    repeat: repeatCount // Setting repeat count directly in the constructor
+                    repeat: repeatCount, // Setting repeat count directly in the constructor
+                    transparent: 'rgba(0, 0, 0, 0)' // Set transparent background
                 });
 
                 imageArray.forEach(function (image) {
-                    gif.addFrame(image, { delay: delay });
+                    gif.addFrame(image, { delay: delay, copy: true }); // Set copy to true to maintain transparency
                 });
 
                 gif.on('finished', function (blob) {
