@@ -19,6 +19,7 @@
         <h2 class="mb-4">Image Upload and Conversion to Black and White</h2>
         <input type="file" id="imageInput" class="form-control-file" multiple>
         <button id="downloadAllBtn" class="btn btn-primary mt-3" disabled>Download All Images (ZIP)</button>
+        <button id="clearTableBtn" class="btn btn-danger mt-3 ml-3">Clear Table</button>
 
         <table class="table mt-4">
             <thead>
@@ -43,6 +44,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 
     <script>
+
+        function formatFileSize(size) {
+            var units = ["B", "KB", "MB", "GB", "TB"];
+            var i = 0;
+            while (size >= 1024 && i < units.length - 1) {
+                size /= 1024;
+                i++;
+            }
+            return size.toFixed(2) + " " + units[i];
+        }
 
         $(document).ready(function () {
             $('#imageInput').change(function () {
@@ -78,15 +89,16 @@
 
                         ctx.putImageData(imageData, 0, 0);
 
-                        var blackAndWhiteDataUrl = canvas.toDataURL();
-                        var imageSize = Math.round(file.size / 1024) + " KB";
+                        var imageType = file.type === 'image/webp' ? 'image/webp' : 'image/png';
+                        var blackAndWhiteDataUrl = canvas.toDataURL(imageType, 1); // Specify image type and quality
+                        var imageSize = formatFileSize((blackAndWhiteDataUrl.length * 3) / 4); // Calculate image size from base64 data
 
                         // Append a new row to the table with image data
                         var newRow = "<tr>" +
                             "<td>" + (index + 1) + "</td>" +
                             "<td><img src='" + blackAndWhiteDataUrl + "' alt='Preview' style='width:100px'></td>" +
                             "<td>" + imageSize + "</td>" +
-                            "<td><a href='" + blackAndWhiteDataUrl + "' download='black_and_white_image_" + (index + 1) + ".jpg' class='btn btn-primary'>Download</a></td>" +
+                            "<td><a href='" + blackAndWhiteDataUrl + "' download='black_and_white_image_" + (index + 1) + "." + (imageType === 'image/webp' ? 'webp' : 'png') + "' class='btn btn-primary'>Download</a></td>" +
                             "</tr>";
                         $('#imageTableBody').append(newRow);
                     };
@@ -100,16 +112,15 @@
                 var promises = [];
                 $('#imageTableBody img').each(function (index) {
                     var imageUrl = $(this).attr('src');
-                    var fileName = 'image_' + (index + 1) + '.jpg';
+                    var fileName = 'image_' + (index + 1) + '.' + (imageUrl.endsWith('.webp') ? 'webp' : 'png');
                     var promise = new Promise(function (resolve, reject) {
-                        JSZipUtils.getBinaryContent(imageUrl, function (err, data) {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                zip.file(fileName, data, { binary: true });
+                        fetch(imageUrl)
+                            .then(response => response.blob())
+                            .then(blob => {
+                                zip.file(fileName, blob);
                                 resolve();
-                            }
-                        });
+                            })
+                            .catch(error => reject(error));
                     });
                     promises.push(promise);
                 });
@@ -121,6 +132,11 @@
                 }).catch(function (error) {
                     console.error('Error creating zip file:', error);
                 });
+            });
+
+            $('#clearTableBtn').click(function () {
+                $('#imageTableBody').empty();
+                $('#downloadAllBtn').prop('disabled', true);
             });
         });
     </script>
