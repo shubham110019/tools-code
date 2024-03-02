@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black and White Image Converter</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        #previewImage {
+            max-width: 100px;
+            max-height: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Image Upload and Conversion to Black and White</h2>
+        <input type="file" id="imageInput" class="form-control-file" multiple>
+        <button id="downloadAllBtn" class="btn btn-primary mt-3" disabled>Download All Images (ZIP)</button>
+
+        <table class="table mt-4">
+            <thead>
+                <tr>
+                    <th>Index</th>
+                    <th>Image Preview</th>
+                    <th>Image Size</th>
+                    <th>Download</th>
+                </tr>
+            </thead>
+            <tbody id="imageTableBody">
+                <!-- Images will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+
+    <script>
+
+        $(document).ready(function () {
+            $('#imageInput').change(function () {
+                var files = this.files;
+                if (files.length > 0) {
+                    $('#downloadAllBtn').prop('disabled', false);
+                    for (var i = 0; i < files.length; i++) {
+                        processImage(files[i], i);
+                    }
+                }
+            });
+
+            function processImage(file, index) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = new Image();
+                    img.onload = function () {
+                        var canvas = document.createElement("canvas");
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        var ctx = canvas.getContext("2d");
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        var data = imageData.data;
+
+                        for (var i = 0; i < data.length; i += 4) {
+                            var avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                            data[i] = avg; // Red
+                            data[i + 1] = avg; // Green
+                            data[i + 2] = avg; // Blue
+                        }
+
+                        ctx.putImageData(imageData, 0, 0);
+
+                        var blackAndWhiteDataUrl = canvas.toDataURL();
+                        var imageSize = Math.round(file.size / 1024) + " KB";
+
+                        // Append a new row to the table with image data
+                        var newRow = "<tr>" +
+                            "<td>" + (index + 1) + "</td>" +
+                            "<td><img src='" + blackAndWhiteDataUrl + "' alt='Preview' style='width:100px'></td>" +
+                            "<td>" + imageSize + "</td>" +
+                            "<td><a href='" + blackAndWhiteDataUrl + "' download='black_and_white_image_" + (index + 1) + ".jpg' class='btn btn-primary'>Download</a></td>" +
+                            "</tr>";
+                        $('#imageTableBody').append(newRow);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            $('#downloadAllBtn').click(function () {
+                var zip = new JSZip();
+                var promises = [];
+                $('#imageTableBody img').each(function (index) {
+                    var imageUrl = $(this).attr('src');
+                    var fileName = 'image_' + (index + 1) + '.jpg';
+                    var promise = new Promise(function (resolve, reject) {
+                        JSZipUtils.getBinaryContent(imageUrl, function (err, data) {
+                            if (err) {
+                                reject(err);
+                            } else {
+                                zip.file(fileName, data, { binary: true });
+                                resolve();
+                            }
+                        });
+                    });
+                    promises.push(promise);
+                });
+
+                Promise.all(promises).then(function () {
+                    zip.generateAsync({ type: 'blob' }).then(function (content) {
+                        saveAs(content, 'black_and_white_images.zip');
+                    });
+                }).catch(function (error) {
+                    console.error('Error creating zip file:', error);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
