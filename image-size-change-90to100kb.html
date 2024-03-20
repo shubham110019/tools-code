@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Size Resizer</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        #previewImage {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2>Image Size Resizer</h2>
+        <input type="file" id="fileInput" class="form-control-file mb-3">
+        <button id="resizeBtn" class="btn btn-primary">Resize Image</button>
+        <div id="output"></div>
+        <a id="downloadLink" class="btn btn-success mt-3" style="display: none;" download>Download Resized Image</a>
+        <div id="previewContainer" style="display: none;">
+            <h3>Preview:</h3>
+            <img id="previewImage" src="#" alt="Resized Image Preview">
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.0.5/compressor.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#resizeBtn').on('click', function () {
+                console.log('Button clicked');
+
+                var fileInput = document.getElementById('fileInput');
+                var file = fileInput.files[0];
+
+                if (file) {
+                    console.log('File selected:', file);
+
+                    var targetMinSize = 90 * 1024; // 90KB
+                    var targetMaxSize = 100 * 1024; // 100KB
+                    var quality = 1.0; // Initial quality setting
+
+                    // Start compression loop
+                    compressImage(file, quality, targetMinSize, targetMaxSize);
+                } else {
+                    alert('Please select an image file.');
+                }
+            });
+
+            function compressImage(file, quality, targetMinSize, targetMaxSize) {
+                console.log('Compressing image...');
+
+                new Compressor(file, {
+                    quality: quality,
+                    maxWidth: 1200,
+                    maxHeight: 1200,
+                    success: function (compressedResult) {
+                        console.log('Image compressed successfully:', compressedResult);
+
+                        var compressedSize = compressedResult.size;
+                        console.log('Compressed image size:', compressedSize);
+
+                        var previewImage = document.getElementById('previewImage');
+                        previewImage.src = URL.createObjectURL(compressedResult);
+
+                        $('#previewContainer').show();
+
+                        $('#output').html('<p>Resized Image Size: ' + (compressedSize / 1024).toFixed(2) + 'KB</p>');
+
+                        // Check if the compressed size falls within the target size range
+                        if (compressedSize > targetMaxSize) {
+                            // If compressed size is larger than target max size, reduce quality and compress again
+                            quality -= 0.1; // Reduce quality by 0.1
+                            compressImage(file, quality, targetMinSize, targetMaxSize);
+                        } else if (compressedSize < targetMinSize) {
+                            // If compressed size is smaller than target min size, increase quality and compress again
+                            quality += 0.1; // Increase quality by 0.1
+                            compressImage(file, quality, targetMinSize, targetMaxSize);
+                        } else {
+                            // Compressed size is within the target range
+                            var reader = new FileReader();
+                            reader.onloadend = function () {
+                                var base64data = reader.result;
+                                var downloadLink = document.getElementById('downloadLink');
+                                downloadLink.href = base64data;
+                                downloadLink.style.display = 'inline-block';
+                            }
+                            reader.readAsDataURL(compressedResult);
+                        }
+                    },
+                    error: function (error) {
+                        console.log('Compression error:', error.message);
+                    },
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
