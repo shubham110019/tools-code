@@ -126,8 +126,8 @@
                             var base64data = reader.result;
                             var rowData = '<tr>' +
                                 '<td><img src="' + base64data + '" alt="Resized Image" style="max-width:100px;"></td>' +
-                                '<td>' + (uploadSize / 1024).toFixed(2) + 'KB</td>' +
-                                '<td>' + (compressedSize / 1024).toFixed(2) + 'KB</td>' +
+                                '<td>' + formatFileSize(uploadSize) + '</td>' +
+                                '<td>' + formatFileSize(compressedSize) + '</td>' +
                                 '<td><a href="' + base64data + '" class="btn btn-success" download="' + file.name + '">Download</a></td>' +
                                 '</tr>';
                             $('#imageData').append(rowData);
@@ -143,6 +143,16 @@
                         $('#loader').hide();
                     },
                 });
+            }
+
+            function formatFileSize(size) {
+                var units = ["B", "KB", "MB", "GB", "TB"];
+                var i = 0;
+                while (size >= 1024 && i < units.length - 1) {
+                    size /= 1024;
+                    i++;
+                }
+                return size.toFixed(2) + " " + units[i];
             }
         });
     </script>
