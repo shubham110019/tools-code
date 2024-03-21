@@ -26,7 +26,8 @@
                         class="fa-solid fa-cloud-arrow-up" style="color: #fafafa"></i>Upload Files</button> <button
                     class="btn btn-danger ml-4" id="clearBtn" style="display: none;" onclick="clearImages()">Clear
                     Images</button>
-
+                <button class="btn btn-success ml-4" id="downloadAllBtn" style="display: none;"
+                    onclick="downloadAllImages()">Download All as ZIP</button>
 
             </div>
             <div class="col-md-12 mt-32">
@@ -46,7 +47,7 @@
                     </button>
                 </div>
 
-                <table class="table">
+                <table class="table" id="datashow" style="display: none;">
                     <thead>
                         <tr>
                             <th>Preview</th>
@@ -68,15 +69,16 @@
         </div>
     </div>
 
-
-
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://imgtype.com/wp-content/themes/generatepress/js/compressor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="https://imgtype.com/wp-content/themes/generatepress/js/compressor.min.js"></script>
     <script src="https://imgtype.com//wp-content/themes/generatepress/js/lightbox.min.js"></script>
 
     <script>
+        var compressedImages = []; // Define compressedImages array
+
         function selectFile() {
             jQuery("#fileInput").click();
         }
@@ -88,6 +90,21 @@
         jQuery("#clearBtn").click(function () {
             location.reload();
         });
+
+        function downloadAllImages() {
+            var zip = new JSZip();
+            var folder = zip.folder("compressed_images");
+
+            compressedImages.forEach(function (image) {
+                var filename = image.name;
+                var base64data = image.data.split(",")[1];
+                folder.file(filename, base64data, { base64: true });
+            });
+
+            zip.generateAsync({ type: "blob" }).then(function (content) {
+                saveAs(content, "compressed_images.zip");
+            });
+        }
 
         jQuery(document).ready(function () {
             jQuery('#resizeBtn').on('click', function () {
@@ -125,7 +142,6 @@
                     var filenameWithExt = file.name.split('.'); // Get the file name with extension
                     var filename = filenameWithExt[0]; // Get the file name without extension
 
-
                     new Compressor(file, {
                         quality: quality,
                         maxWidth: 1200,
@@ -157,16 +173,19 @@
                             reader.onloadend = function () {
                                 var base64data = reader.result;
                                 var rowData = '<tr>' +
-                                    '<td><a href="' + base64data + '" data-lightbox="iamge"><img src="' + base64data + '" alt="Resized Image" style="max-width:100px;" ></a></td>' +
+                                    '<td><a href="' + base64data + '" data-lightbox="image"><img src="' + base64data + '" alt="Resized Image" style="max-width:100px;" ></a></td>' +
                                     '<td>' + formatFileSize(uploadSize) + '</td>' +
                                     '<td>' + formatFileSize(compressedSize) + '</td>' +
                                     '<td><a href="' + base64data + '" class="btn btn-success" download="' + file.name + '">Download</a></td>' +
                                     '</tr>';
                                 jQuery('#imageData').append(rowData);
                                 imagesProcessed++;
+                                compressedImages.push({ name: file.name, data: base64data }); // Add compressed image to array
                                 if (imagesProcessed === totalImages) {
                                     jQuery('#loader').hide();
                                     jQuery("#clearBtn").css("display", "initial");
+                                    jQuery("#downloadAllBtn").show();
+                                    jQuery('#datashow').show();
                                     checkErrors();
                                 }
                             }
@@ -178,6 +197,8 @@
                             if (imagesProcessed === totalImages) {
                                 jQuery('#loader').hide();
                                 jQuery("#clearBtn").css("display", "initial");
+                                jQuery("#downloadAllBtn").show();
+                                jQuery('#datashow').show();
                                 checkErrors();
                             }
                         },
@@ -192,7 +213,6 @@
                             jQuery('#errorContainer ul').append('<li>' + message + '</li>'); // Append each error
                         });
                         jQuery('#errorContainer').show();
-
                         jQuery('#errorContainerbox').show();
 
                         // Hide the error container after 5 seconds
@@ -201,7 +221,6 @@
                         }, 5000);
                     }
                 }
-
 
                 function formatFileSize(size) {
                     var units = ["B", "KB", "MB", "GB", "TB"];
@@ -215,6 +234,7 @@
             });
         });
     </script>
+
 
 </body>
 
