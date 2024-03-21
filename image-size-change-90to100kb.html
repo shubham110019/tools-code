@@ -24,7 +24,7 @@
                 <button class="btn btn-primary upload-file upload-file-webp" onclick="selectFile()" data-event="ev"
                     data-category="Webp Page" data-action="Upload Files" data-label="Upload Files Webp"><i
                         class="fa-solid fa-cloud-arrow-up" style="color: #fafafa"></i>Upload Files</button> <button
-                    class="btn btn-danger ml-4" id="clearBtn" style="display: none;">Clear
+                    class="btn btn-danger ml-4" id="clearBtn" style="display: none;" onclick="clearImages()">Clear
                     Images</button>
 
 
@@ -35,8 +35,6 @@
                     <input type="file" id="fileInput" class="form-control-file mb-3" multiple>
                     <button id="resizeBtn" class="btn btn-primary">Resize Images</button>
                 </div>
-
-
 
                 <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorContainerbox"
                     style="display: none;">
@@ -52,8 +50,8 @@
                     <thead>
                         <tr>
                             <th>Preview</th>
-                            <th>Upload Image Size</th>
-                            <th>Compressed Image Size</th>
+                            <th>Old Size</th>
+                            <th>Compressed Size</th>
                             <th>Download</th>
                         </tr>
                     </thead>
@@ -71,9 +69,13 @@
     </div>
 
 
+
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://imgtype.com/wp-content/themes/generatepress/js/compressor.min.js"></script>
+    <script src="https://imgtype.com/wp-content/themes/generatepress/js/compressor.min.js"></script>
+    <script src="https://imgtype.com//wp-content/themes/generatepress/js/lightbox.min.js"></script>
+
     <script>
         function selectFile() {
             jQuery("#fileInput").click();
@@ -109,53 +111,56 @@
 
                     var targetMinSize = 10 * 1024; // 90KB
                     var targetMaxSize = 100 * 1024; // 100KB
+
                     var quality = 1.0; // Initial quality setting
 
                     compressImage(file, quality, targetMinSize, targetMaxSize);
                 }
 
                 function compressImage(file, quality, targetMinSize, targetMaxSize, attempt = 0) {
-                    var reader = new FileReader();
-                    reader.onloadend = function () {
-                        var base64data = reader.result;
 
-                        // Check file type
-                        var fileType = file.type;
-                        var fileTypeString = fileType.split('/')[1]; // Get the file extension
-                        var filenameWithExt = file.name.split('.'); // Get the file name with extension
-                        var filename = filenameWithExt[0]; // Get the file name without extension
+                    // Check file type
+                    var fileType = file.type;
+                    var fileTypeString = fileType.split('/')[1]; // Get the file extension
+                    var filenameWithExt = file.name.split('.'); // Get the file name with extension
+                    var filename = filenameWithExt[0]; // Get the file name without extension
 
-                        new Compressor(file, {
-                            quality: quality,
-                            maxWidth: 1200,
-                            maxHeight: 1200,
-                            success: function (compressedResult) {
-                                console.log('Image compressed successfully:', compressedResult);
-                                var compressedSize = compressedResult.size;
-                                console.log('Compressed image size:', compressedSize);
-                                var uploadSize = file.size;
 
-                                if (compressedSize < targetMinSize || compressedSize > targetMaxSize) {
-                                    if (attempt < 10) { // Maximum 10 attempts
-                                        if (compressedSize < targetMinSize) {
-                                            quality += 0.1; // Increase quality by 0.1
-                                        } else {
-                                            quality -= 0.1; // Reduce quality by 0.1
-                                        }
-                                        compressImage(file, quality, targetMinSize, targetMaxSize, attempt + 1);
-                                        return;
+                    new Compressor(file, {
+                        quality: quality,
+                        maxWidth: 1200,
+                        maxHeight: 1200,
+                        success: function (compressedResult) {
+                            console.log('Image compressed successfully:', compressedResult);
+                            var compressedSize = compressedResult.size;
+                            console.log('Compressed image size:', compressedSize);
+                            var uploadSize = file.size;
+
+                            if (compressedSize < targetMinSize || compressedSize > targetMaxSize) {
+                                if (attempt < 10) {
+                                    if (compressedSize < targetMinSize) {
+                                        quality += 0.1; // Increase quality by 0.1
                                     } else {
-                                        errorMessages.push('Unable to compress image ' + filename + '.' + fileTypeString);
-                                        checkErrors();
-                                        return;
+                                        quality -= 0.1; // Reduce quality by 0.1
                                     }
-                                }
+                                    compressImage(file, quality, targetMinSize, targetMaxSize, attempt + 1);
+                                    return;
 
+                                } else {
+                                    errorMessages.push('Unable to compress image ' + filename + '.' + fileTypeString);
+                                    checkErrors();
+                                    return;
+                                }
+                            }
+
+                            var reader = new FileReader();
+                            reader.onloadend = function () {
+                                var base64data = reader.result;
                                 var rowData = '<tr>' +
-                                    '<td><img src="' + base64data + '" alt="Resized Image" style="max-width:100px;"></td>' +
+                                    '<td><a href="' + base64data + '" data-lightbox="iamge"><img src="' + base64data + '" alt="Resized Image" style="max-width:100px;" ></a></td>' +
                                     '<td>' + formatFileSize(uploadSize) + '</td>' +
                                     '<td>' + formatFileSize(compressedSize) + '</td>' +
-                                    '<td><a href="' + base64data + '" class="btn btn-success" download="' + filename + '_compressed.' + fileTypeString + '">Download</a></td>' +
+                                    '<td><a href="' + base64data + '" class="btn btn-success" download="' + file.name + '">Download</a></td>' +
                                     '</tr>';
                                 jQuery('#imageData').append(rowData);
                                 imagesProcessed++;
@@ -164,19 +169,19 @@
                                     jQuery("#clearBtn").css("display", "initial");
                                     checkErrors();
                                 }
-                            },
-                            error: function (error) {
-                                console.log('Compression error:', error.message);
-                                imagesProcessed++;
-                                if (imagesProcessed === totalImages) {
-                                    jQuery('#loader').hide();
-                                    jQuery("#clearBtn").css("display", "initial");
-                                    checkErrors();
-                                }
-                            },
-                        });
-                    }
-                    reader.readAsDataURL(file);
+                            }
+                            reader.readAsDataURL(compressedResult);
+                        },
+                        error: function (error) {
+                            console.log('Compression error:', error.message);
+                            imagesProcessed++;
+                            if (imagesProcessed === totalImages) {
+                                jQuery('#loader').hide();
+                                jQuery("#clearBtn").css("display", "initial");
+                                checkErrors();
+                            }
+                        },
+                    });
                 }
 
                 function checkErrors() {
@@ -196,6 +201,7 @@
                         }, 5000);
                     }
                 }
+
 
                 function formatFileSize(size) {
                     var units = ["B", "KB", "MB", "GB", "TB"];
