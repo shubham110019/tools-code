@@ -4,72 +4,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Size Resizer</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* Custom styles */
-        #previewImage {
-            max-width: 100%;
-            height: auto;
-        }
-
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 4px solid #3498db;
-            width: 30px;
-            height: 30px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto;
-            display: none;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel='stylesheet' id='custom-style-css'
+        href='https://imgtype.com/wp-content/themes/generatepress/css/main.css?ver=4.3.7' media='all' />
 </head>
 
 <body>
 
-    <div class="container mt-5">
+    <div class="container py-104">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1 class="text-center">Compress JPEG to 100KB</h1>
+                <p class="gt mb-0">Compress images to 100KB or smaller with our easy-to-use online tool.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center mt-32">
+                <button class="btn btn-primary upload-file upload-file-webp" onclick="selectFile()" data-event="ev"
+                    data-category="Webp Page" data-action="Upload Files" data-label="Upload Files Webp"><i
+                        class="fa-solid fa-cloud-arrow-up" style="color: #fafafa"></i>Upload Files</button> <button
+                    class="btn btn-danger ml-4" id="clearBtn" style="display: none;">Clear
+                    Images</button>
 
-        <input type="file" id="fileInput" class="form-control-file mb-3" multiple>
-        <button id="resizeBtn" class="btn btn-primary">Resize Images</button>
-        <div class="loader" id="loader"></div>
 
-        <br><br>
-        <h2>Image Size Resizer</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Preview</th>
-                    <th>Upload Image Size</th>
-                    <th>Compressed Image Size</th>
-                    <th>Download</th>
-                </tr>
-            </thead>
-            <tbody id="imageData">
-                <!-- Data will be inserted here -->
-            </tbody>
-        </table>
+            </div>
+            <div class="col-md-12 mt-32">
 
+                <div class="d-none">
+                    <input type="file" id="fileInput" class="form-control-file mb-3" multiple>
+                    <button id="resizeBtn" class="btn btn-primary">Resize Images</button>
+                </div>
+
+
+
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorContainerbox"
+                    style="display: none;">
+
+                    <div id="errorContainer"></div>
+
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Preview</th>
+                            <th>Upload Image Size</th>
+                            <th>Compressed Image Size</th>
+                            <th>Download</th>
+                        </tr>
+                    </thead>
+                    <tbody id="imageData">
+                        <!-- Data will be inserted here -->
+                    </tbody>
+                </table>
+
+
+                <div class="loader" id="loader"></div>
+
+
+            </div>
+        </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.0.5/compressor.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#resizeBtn').on('click', function () {
-                console.log('Button clicked');
 
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://imgtype.com/wp-content/themes/generatepress/js/compressor.min.js"></script>
+    <script>
+        function selectFile() {
+            jQuery("#fileInput").click();
+        }
+
+        jQuery("#fileInput").change(function () {
+            jQuery('#resizeBtn').click();
+        });
+
+        jQuery("#clearBtn").click(function () {
+            location.reload();
+        });
+
+        jQuery(document).ready(function () {
+            jQuery('#resizeBtn').on('click', function () {
                 var fileInput = document.getElementById('fileInput');
                 var files = fileInput.files;
 
@@ -79,83 +98,118 @@
                 }
 
                 // Show loader
-                $('#loader').show();
+                jQuery('#loader').show();
+
+                var totalImages = files.length;
+                var imagesProcessed = 0;
+                var errorMessages = []; // Store error messages
 
                 for (var i = 0; i < files.length; i++) {
                     var file = files[i];
-                    console.log('File selected:', file);
 
-                    var targetMinSize = 90 * 1024; // 90KB
+                    var targetMinSize = 10 * 1024; // 90KB
                     var targetMaxSize = 100 * 1024; // 100KB
                     var quality = 1.0; // Initial quality setting
 
-                    // Start compression loop for each file
                     compressImage(file, quality, targetMinSize, targetMaxSize);
                 }
-            });
 
-            function compressImage(file, quality, targetMinSize, targetMaxSize) {
-                console.log('Compressing image:', file.name);
+                function compressImage(file, quality, targetMinSize, targetMaxSize, attempt = 0) {
+                    var reader = new FileReader();
+                    reader.onloadend = function () {
+                        var base64data = reader.result;
 
-                new Compressor(file, {
-                    quality: quality,
-                    maxWidth: 1200,
-                    maxHeight: 1200,
-                    success: function (compressedResult) {
-                        console.log('Image compressed successfully:', compressedResult);
+                        // Check file type
+                        var fileType = file.type;
+                        var fileTypeString = fileType.split('/')[1]; // Get the file extension
+                        var filenameWithExt = file.name.split('.'); // Get the file name with extension
+                        var filename = filenameWithExt[0]; // Get the file name without extension
 
-                        var compressedSize = compressedResult.size;
-                        console.log('Compressed image size:', compressedSize);
+                        new Compressor(file, {
+                            quality: quality,
+                            maxWidth: 1200,
+                            maxHeight: 1200,
+                            success: function (compressedResult) {
+                                console.log('Image compressed successfully:', compressedResult);
+                                var compressedSize = compressedResult.size;
+                                console.log('Compressed image size:', compressedSize);
+                                var uploadSize = file.size;
 
-                        var uploadSize = file.size;
+                                if (compressedSize < targetMinSize || compressedSize > targetMaxSize) {
+                                    if (attempt < 10) { // Maximum 10 attempts
+                                        if (compressedSize < targetMinSize) {
+                                            quality += 0.1; // Increase quality by 0.1
+                                        } else {
+                                            quality -= 0.1; // Reduce quality by 0.1
+                                        }
+                                        compressImage(file, quality, targetMinSize, targetMaxSize, attempt + 1);
+                                        return;
+                                    } else {
+                                        errorMessages.push('Unable to compress image ' + filename + '.' + fileTypeString);
+                                        checkErrors();
+                                        return;
+                                    }
+                                }
 
-                        if (compressedSize < targetMinSize || compressedSize > targetMaxSize) {
-                            // If the compressed size is not within the target range, adjust the quality and recompress
-                            if (compressedSize < targetMinSize) {
-                                quality += 0.1; // Increase quality by 0.1
-                            } else {
-                                quality -= 0.1; // Reduce quality by 0.1
-                            }
-                            // Recompress with the adjusted quality
-                            compressImage(file, quality, targetMinSize, targetMaxSize);
-                            return; // Exit the function to prevent adding data to the table
-                        }
-
-                        var reader = new FileReader();
-                        reader.onloadend = function () {
-                            var base64data = reader.result;
-                            var rowData = '<tr>' +
-                                '<td><img src="' + base64data + '" alt="Resized Image" style="max-width:100px;"></td>' +
-                                '<td>' + formatFileSize(uploadSize) + '</td>' +
-                                '<td>' + formatFileSize(compressedSize) + '</td>' +
-                                '<td><a href="' + base64data + '" class="btn btn-success" download="' + file.name + '">Download</a></td>' +
-                                '</tr>';
-                            $('#imageData').append(rowData);
-                        }
-                        reader.readAsDataURL(compressedResult);
-
-                        // Hide loader after processing
-                        $('#loader').hide();
-                    },
-                    error: function (error) {
-                        console.log('Compression error:', error.message);
-                        // Hide loader in case of error
-                        $('#loader').hide();
-                    },
-                });
-            }
-
-            function formatFileSize(size) {
-                var units = ["B", "KB", "MB", "GB", "TB"];
-                var i = 0;
-                while (size >= 1024 && i < units.length - 1) {
-                    size /= 1024;
-                    i++;
+                                var rowData = '<tr>' +
+                                    '<td><img src="' + base64data + '" alt="Resized Image" style="max-width:100px;"></td>' +
+                                    '<td>' + formatFileSize(uploadSize) + '</td>' +
+                                    '<td>' + formatFileSize(compressedSize) + '</td>' +
+                                    '<td><a href="' + base64data + '" class="btn btn-success" download="' + filename + '_compressed.' + fileTypeString + '">Download</a></td>' +
+                                    '</tr>';
+                                jQuery('#imageData').append(rowData);
+                                imagesProcessed++;
+                                if (imagesProcessed === totalImages) {
+                                    jQuery('#loader').hide();
+                                    jQuery("#clearBtn").css("display", "initial");
+                                    checkErrors();
+                                }
+                            },
+                            error: function (error) {
+                                console.log('Compression error:', error.message);
+                                imagesProcessed++;
+                                if (imagesProcessed === totalImages) {
+                                    jQuery('#loader').hide();
+                                    jQuery("#clearBtn").css("display", "initial");
+                                    checkErrors();
+                                }
+                            },
+                        });
+                    }
+                    reader.readAsDataURL(file);
                 }
-                return size.toFixed(2) + " " + units[i];
-            }
+
+                function checkErrors() {
+                    if (errorMessages.length > 0) {
+                        jQuery('#loader').hide();
+                        jQuery('#errorContainer').html('<ul></ul>'); // Clear previous errors
+                        errorMessages.forEach(function (message) {
+                            jQuery('#errorContainer ul').append('<li>' + message + '</li>'); // Append each error
+                        });
+                        jQuery('#errorContainer').show();
+
+                        jQuery('#errorContainerbox').show();
+
+                        // Hide the error container after 5 seconds
+                        setTimeout(function () {
+                            jQuery('#errorContainerbox').hide();
+                        }, 5000);
+                    }
+                }
+
+                function formatFileSize(size) {
+                    var units = ["B", "KB", "MB", "GB", "TB"];
+                    var i = 0;
+                    while (size >= 1024 && i < units.length - 1) {
+                        size /= 1024;
+                        i++;
+                    }
+                    return size.toFixed(2) + " " + units[i];
+                }
+            });
         });
     </script>
+
 </body>
 
 </html>
