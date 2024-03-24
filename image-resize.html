@@ -4,147 +4,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk Image Resizer</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel='stylesheet' id='custom-style-css'
+        href='https://imgtype.com/wp-content/themes/generatepress/css/main.css?ver=4.3.7' media='all' />
+
     <style>
-        #loadingIndicator {
-            display: none;
+        body {
+            background: #FFF !important;
+        }
+
+        #selected-images-container {
+            border: 1px dashed #222;
+            background: #f6f6f7;
+            padding: 20px !important;
+            border-radius: 4px !important;
+        }
+
+        #selected-images-container .selected-image img {
+            min-height: 100px !important;
+            max-height: 100px !important;
+            margin-bottom: 8px !important;
+            border-radius: 8px !important;
+        }
+
+        #selected-images-container .selected-image {
+            margin: 4px !important;
+            border-radius: 8px !important;
+            background: #FFF !important;
+        }
+
+        #selected-images-container .image-info .img-name {
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 20px !important;
+            margin-bottom: 0 !important;
+            margin-top: 4px !important;
+            text-align: center !important;
+        }
+
+        .image-info .img-size {
+
+            display: none !important;
+        }
+
+        #selected-images-container .image-info .int-size {
+            font-size: 12px !important;
+            background: #4d90fe !important;
+            display: inline-block;
+            color: #FFF !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            line-height: 20px !important;
+            font-weight: 400 !important;
+        }
+
+        .image-info {
+            text-align: left !important;
+        }
+
+        .preview {
+            border: 1px dashed #222;
+            background: #f6f6f7;
+            padding: 32px !important;
+            border-radius: 4px !important;
+            margin-top: 32px !important;
+        }
+
+        #upload-form {
+            background: #f6f9fb;
+            border: 1px solid #e6e9eb;
+            padding: 32px !important;
+            margin-top: 32px !important;
+        }
+
+        .preview #image-previews .file-info {
+            display: block !important;
+            text-align: left !important;
+        }
+
+        .image-container {
+            background: #FFF !important;
+        }
+
+        .image-container .output-image {
+            min-height: 100px !important;
+            max-height: 100px !important;
+        }
+
+        .file-info p.name {
+            font-size: 14px !important;
+            line-height: 20px !important;
+            font-weight: 400 !important;
+            margin-bottom: 0 !important;
+            text-align: center;
+        }
+
+        .file-info p.size {
+            display: none !important;
+        }
+
+        .image-container .file-info .resized-dimensions,
+        .newsize {
+            font-size: 12px !important;
+            background: #4d90fe !important;
+            display: inline-block;
+            color: #FFF !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            line-height: 20px !important;
+            font-weight: 400 !important;
+            margin-bottom: 8px !important;
+        }
+
+        .lin-data {
+            display: flex !important;
+            /* justify-content: space-between !important; */
+            margin: 8px 0px !important;
+            column-gap: 10px;
+            justify-content: center;
+        }
+
+        .lin-data p {
+            margin-bottom: 0px !important;
+        }
+
+        .file-info .lin-data .file-size,
+        .oldsize {
+            font-size: 12px !important;
+            background: #adadb6 !important;
+            display: inline-block;
+            color: #FFF !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            line-height: 20px !important;
+            font-weight: 400 !important;
+            margin-bottom: 8px !important;
+
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container mt-5">
-        <h2 class="mb-4">Bulk Image Resizer</h2>
+    <div class="container py-104">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1 class="text-center">Effortless Image Resize: Resize Images</h1>
+                Resize your images effortlessly with ImgType Image Resize.
 
-        <form id="uploadForm">
-            <div class="form-group">
-                <label for="imageInput">Select Images</label>
-                <input type="file" class="form-control-file" id="imageInput" accept="image/*" multiple required>
             </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center mt-32">
+                <button class="btn btn-primary upload-file" onclick="selectFile()"><i class="fa-solid fa-cloud-arrow-up"
+                        style="color: #fafafa"></i> Upload Files</button><button class="btn btn-danger ml-4"
+                    id="reload-button"><i class="fa-regular fa-circle-xmark" style="color: #ffffff"></i>CLEAR
+                    QUEUE</button><span id="download-button" style="display: none"></span>
 
-            <div class="form-group">
-                <label for="resizeWidth">Resize Width (px)</label>
-                <input type="number" class="form-control" id="resizeWidth" placeholder="Enter width">
             </div>
-
-            <div class="form-group">
-                <label for="resizeHeight">Resize Height (px)</label>
-                <input type="number" class="form-control" id="resizeHeight" placeholder="Enter height">
-            </div>
-
-            <button type="button" class="btn btn-primary" onclick="resizeImages()">Resize Images</button>
-
-            <!-- Loading indicator -->
-            <div id="loadingIndicator" class="mt-2">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="sr-only">Loading...</span>
+            <div class="col-md-12 mt-32">
+                <div class="frm" id="frm">
+                    <div id="selected-images-container" class="d-flex flex-wrap"></div>
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <input type="file" class="form-control-file d-none" id="image-input" accept="image/*"
+                                required="" multiple="">
+                        </div>
+                        <div class="form-group custom-size"><label for="width-input">Width:</label>
+                            <input type="number" class="form-control" id="width-input" min="1" required="">
+                        </div>
+                        <div class="form-group custom-size"><label for="height-input">Height:</label>
+                            <input type="number" class="form-control" id="height-input" min="1">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Resize Image</button>
+                    </form>
                 </div>
-                <span class="ml-2">Processing Images...</span>
-            </div>
-        </form>
+                <div class="preview" style="display: none;">
 
-        <div id="result" class="mt-4"></div>
+                    <p>Your IMAGES have been resized!</p>
+                    <div id="image-previews" class="d-flex flex-wrap"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Bootstrap JS and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
+    <div class="bg-main">
+        <div class="container py-104">
+            <div class="row align-items-center">
+                <div class="col-lg-6 col-md-12 innser-imgt1 innser-imgmedia">
+                    <img src="https://imgtype.com/wp-content/uploads/2023/06/resize-1.png" alt="imgtype"
+                        title="imgtype">
+                </div>
+                <div class="col-lg-6 col-md-12">
+                    <h2>Effortless Image Resizing for Any Purpose</h2>
+                    <p class="gt">ImgType Image Resize is your go-to online tool for resizing images quickly and easily.
+                        Whether you need to shrink or enlarge an image, our platform provides a seamless experience that
+                        caters to your specific requirements. With a user-friendly interface and powerful resizing
+                        capabilities, you can achieve the perfect image size for your projects in just a few clicks.</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://imgtype.com/wp-content/themes/generatepress/assets/new/jszip.min.js"></script>
+    <script src="https://imgtype.com/wp-content/themes/generatepress/assets/new/jszip-utils.min.js"></script>
     <script>
-        function showLoadingIndicator() {
-            document.getElementById('loadingIndicator').style.display = 'block';
+        function selectFile() {
+            document.getElementById("image-input").click();
         }
 
-        function hideLoadingIndicator() {
-            document.getElementById('loadingIndicator').style.display = 'none';
-        }
 
-        function formatFileSize(size) {
-            var units = ["B", "KB", "MB", "GB", "TB"];
-            var i = 0;
-            while (size >= 1024 && i < units.length - 1) {
-                size /= 1024;
-                i++;
-            }
-            return size.toFixed(2) + " " + units[i];
-        }
+        var reloadButton = document.getElementById("reload-button");
 
-        function resizeImages() {
-            var input = document.getElementById('imageInput');
-            var width = document.getElementById('resizeWidth').value;
-            var height = document.getElementById('resizeHeight').value;
+        // Add a click event listener to the button
+        reloadButton.addEventListener("click", function () {
+            // Reload the page
+            location.reload();
+        });
 
-            if (!input.files.length) {
-                alert('Please select at least one image');
-                return;
-            }
+        jQuery("#frm").hide();
+        jQuery("#reload-button").hide();
 
-            showLoadingIndicator();
+        jQuery(document).ready(function () {
+            var fileInput = document.getElementById("image-input");
+            var previewContainer = document.getElementById("image-previews");
+            var downloadButton = document.getElementById("download-button");
+            var zip = new JSZip();
+            var imagesProcessed = 0;
 
-            var images = input.files;
-            var resultContainer = document.getElementById('result');
-            resultContainer.innerHTML = '';
+            jQuery("#upload-form").submit(function (e) {
+                e.preventDefault();
 
-            Array.from(images).forEach(function (file, index) {
-                var reader = new FileReader();
+                jQuery('.preview').show();
 
-                reader.onload = function (e) {
-                    var img = new Image();
-                    img.src = e.target.result;
+                var files = fileInput.files;
+                var widthInput = document.getElementById("width-input");
+                var heightInput = document.getElementById("height-input");
+                var width = parseInt(widthInput.value);
+                var height = parseInt(heightInput.value);
 
-                    img.onload = function () {
-                        var canvas = document.createElement('canvas');
-                        var ctx = canvas.getContext('2d');
+                if (isNaN(height)) {
+                    height = "auto";
+                }
 
-                        var newWidth, newHeight;
+                downloadButton.style.display = "none";
+                previewContainer.innerHTML = "";
 
-                        if (width && height) {
-                            newWidth = parseInt(width);
-                            newHeight = parseInt(height);
-                        } else if (width) {
-                            // Calculate height to maintain aspect ratio based on the provided width
-                            newWidth = parseInt(width);
-                            newHeight = newWidth * (img.height / img.width);
-                        } else if (height) {
-                            // Calculate width to maintain aspect ratio based on the provided height
-                            newHeight = parseInt(height);
-                            newWidth = newHeight * (img.width / img.height);
-                        } else {
-                            // If both width and height are null, use the original dimensions
-                            newWidth = img.width;
-                            newHeight = img.height;
-                        }
+                // Show loader
+                var loader = document.createElement("div");
+                loader.classList.add("loader");
+                previewContainer.appendChild(loader);
 
-                        canvas.width = newWidth;
-                        canvas.height = newHeight;
+                var processImage = function (file, callback) {
+                    var reader = new FileReader();
 
-                        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                    reader.onload = function (e) {
+                        var previewItem = document.createElement("div");
+                        previewItem.classList.add("image-container");
 
-                        // Convert the canvas content to a blob
-                        canvas.toBlob(function (blob) {
-                            var dataURL = URL.createObjectURL(blob);
+                        var image = document.createElement("img");
+                        image.classList.add("output-image");
 
-                            resultContainer.innerHTML += `<p>Image ${index + 1} - Original Dimensions: ${img.width} x ${img.height}, Size: ${formatFileSize(file.size)}</p>`;
-                            resultContainer.innerHTML += `<p>Resized Image: ${newWidth} x ${newHeight}, Size: ${formatFileSize(blob.size)}</p>`;
-                            resultContainer.innerHTML += '<img src="' + dataURL + '" class="img-fluid" alt="Resized Image">';
-                            resultContainer.innerHTML += '<a href="' + dataURL + '" download="resized_image_' + index + '.' + file.type.split("/")[1] + '" class="btn btn-success mt-2">Download Resized Image</a>';
+                        image.onload = function () {
+                            var canvas = document.createElement("canvas");
+                            var ctx = canvas.getContext("2d");
 
-                            if (index === images.length - 1) {
-                                hideLoadingIndicator();
+                            var canvasWidth = width;
+                            var canvasHeight = height;
+
+                            if (height === "auto") {
+                                var aspectRatio = image.width / image.height;
+                                canvasHeight = Math.round(width / aspectRatio);
                             }
-                        }, file.type);
+
+                            canvas.width = canvasWidth;
+                            canvas.height = canvasHeight;
+                            ctx.drawImage(image, 0, 0, canvasWidth, canvasHeight);
+
+                            canvas.toBlob(function (blob) {
+                                var fileName = file.name;
+                                var extension = fileName.substr(fileName.lastIndexOf(".") + 1);
+
+                                zip.file(fileName, blob, { binary: true });
+
+                                var downloadLink = document.createElement("a");
+                                downloadLink.href = URL.createObjectURL(blob);
+                                downloadLink.download = fileName;
+                                downloadLink.innerText = "Download Image";
+                                downloadLink.classList.add("download-link", "btn", "btn-success");
+
+                                // Display file name, image size, and file size
+                                var fileInfo = document.createElement("div");
+                                fileInfo.classList.add("file-info");
+                                var fileNameElement = document.createElement("p");
+                                fileNameElement.innerText = truncateFileName(fileName, 20);
+                                fileNameElement.classList.add("name");
+
+                                var linDataDiv = document.createElement("div");
+                                linDataDiv.classList.add("lin-data");
+
+
+                                var resizedDimensionsElement = document.createElement("p");
+                                resizedDimensionsElement.innerText = canvasWidth + "x" + canvasHeight;
+                                resizedDimensionsElement.classList.add("resized-dimensions");
+
+
+                                var fileSizeElement = document.createElement("p");
+                                fileSizeElement.innerText = formatBytes(blob.size);
+                                fileSizeElement.classList.add("file-size");
+
+                                linDataDiv.appendChild(resizedDimensionsElement);
+                                linDataDiv.appendChild(fileSizeElement);
+
+                                fileInfo.appendChild(fileNameElement);
+                                fileInfo.appendChild(linDataDiv);
+
+                                previewItem.appendChild(image);
+                                previewItem.appendChild(fileInfo);
+                                previewItem.appendChild(downloadLink);
+
+                                previewContainer.appendChild(previewItem);
+
+                                callback();
+                            }, file.type);
+                        };
+
+                        image.src = e.target.result;
                     };
+
+                    reader.readAsDataURL(file);
                 };
 
-                reader.readAsDataURL(file);
+                var processNextImage = function (index) {
+                    if (index >= files.length) {
+                        // All images processed, generate zip
+                        zip.generateAsync({ type: "blob" }).then(function (content) {
+                            // Remove loader
+                            previewContainer.removeChild(loader);
+
+                            // Remove existing download link
+                            while (downloadButton.firstChild) {
+                                downloadButton.firstChild.remove();
+                            }
+
+                            var downloadLink = document.createElement("a");
+                            downloadLink.href = URL.createObjectURL(content);
+                            downloadLink.download = "imgtype.zip";
+                            downloadLink.innerText = "Download Image";
+                            downloadLink.classList.add("download-link", "btn", "btn-success");
+
+                            downloadButton.appendChild(downloadLink);
+                            downloadButton.style.display = "inline-block";
+                        });
+                        return;
+                    }
+
+                    var file = files[index];
+                    processImage(file, function () {
+                        imagesProcessed++;
+                        processNextImage(index + 1);
+                    });
+                };
+
+                processNextImage(0);
             });
+
+            previewContainer.addEventListener("click", function (event) {
+                if (event.target.classList.contains("download-link")) {
+                    event.preventDefault();
+                    var downloadLink = event.target;
+                    var fileName = downloadLink.download;
+                    var blobURL = downloadLink.href;
+
+                    var anchor = document.createElement("a");
+                    anchor.href = blobURL;
+                    anchor.download = fileName;
+                    anchor.click();
+                } else if (event.target.tagName === "IMG") {
+                    var previewItem = event.target.parentNode;
+                    previewItem.parentNode.removeChild(previewItem);
+                }
+            });
+
+            jQuery("#image-input").on("change", function () {
+                jQuery("#frm").show();
+                jQuery("#reload-button").show();
+
+                jQuery("#frm").click();
+
+            });
+
+        });
+
+        jQuery("#image-input").on("change", function (e) {
+            var files = e.target.files;
+            var selectedImagesContainer = jQuery("#selected-images-container");
+
+            // Clear the container before adding new images
+            selectedImagesContainer.empty();
+
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var reader = new FileReader();
+
+                reader.onload = (function (file) {
+                    return function (e) {
+                        var selectedImage = jQuery("<div>").addClass("selected-image");
+
+                        var imageElement = jQuery("<img>").on("load", function () {
+                            var fileName = jQuery("<p class='img-name'>").text(truncateFileName(file.name, 20));
+                            var imageInfo = jQuery("<div>").addClass("image-info");
+                            imageInfo.append(fileName);
+
+                            var sizeInfo = jQuery("<div>").addClass("lin-data");
+
+                            var imageSize = jQuery("<p class='oldsize'>").text(this.naturalWidth + "x" + this.naturalHeight);
+                            var imageSizeNew = jQuery("<p class='newsize int-sizeeNew'>").text(this.naturalWidth + "x" + this.naturalHeight);
+
+                            sizeInfo.append(imageSize);
+                            sizeInfo.append(imageSizeNew);
+
+                            imageInfo.append(sizeInfo);
+
+                            var fileSize = jQuery("<p class='img-size'>").text(formatBytes(file.size));
+                            imageInfo.append(fileSize);
+
+                            selectedImage.append(imageInfo);
+                        });
+
+                        imageElement.attr("src", e.target.result);
+                        selectedImage.append(imageElement);
+
+                        selectedImagesContainer.append(selectedImage);
+
+                        // Trigger input event to update image sizes
+                        jQuery("#width-input, #height-input").trigger("input");
+                    };
+                })(file);
+
+                reader.readAsDataURL(file);
+            }
+        });
+
+
+
+        jQuery("#width-input, #height-input").on("input", function () {
+            var width = parseInt(jQuery("#width-input").val());
+            var height = parseInt(jQuery("#height-input").val());
+
+            // Update size display for each selected image
+            jQuery(".selected-image").each(function () {
+                var imageElement = jQuery(this).find("img");
+                var naturalWidth = imageElement[0].naturalWidth;
+                var naturalHeight = imageElement[0].naturalHeight;
+
+                if (!isNaN(width) && !isNaN(height)) {
+                    naturalWidth = width;
+                    naturalHeight = height;
+                } else if (!isNaN(width)) {
+                    naturalHeight = Math.round(width / (naturalWidth / naturalHeight));
+                    naturalWidth = width;
+                } else if (!isNaN(height)) {
+                    naturalWidth = Math.round(height * (naturalWidth / naturalHeight));
+                    naturalHeight = height;
+                }
+
+                jQuery(this).find(".int-sizeeNew").text(naturalWidth + "x" + naturalHeight);
+
+            });
+        });
+
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return "0 Bytes";
+            var k = 1024;
+            var sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+        }
+
+        function truncateFileName(fileName, limit) {
+            if (fileName.length <= limit) return fileName;
+            return fileName.substr(0, limit - 3) + "...";
         }
     </script>
-
 </body>
 
 </html>
