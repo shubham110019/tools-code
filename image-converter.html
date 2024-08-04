@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .preview-image {
+            max-width: 100px;
+            max-height: 100px;
+        }
+
+        .loader {
+            display: none;
+        }
+
+        .truncate {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-info {
+            display: inline-block;
+            margin-left: 4px !important;
+        }
+
+        .info-dropdown {
+            position: absolute;
+            display: none;
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+
+
+        .file-info:hover .info-dropdown {
+            display: block;
+        }
+
+        .info-dropdown img {
+            max-width: 100px;
+            max-height: 100px;
+        }
+
+        .downloadcta {
+            text-align: right;
+        }
+
+        td {
+            width: 1px;
+            white-space: nowrap !important;
+        }
+
+        td.truncate {
+            white-space: normal !important;
+            width: auto !important;
+        }
+
+        .tabledata {
+            padding: 16px;
+            min-height: 300px;
+        }
+
+        #result-table {
+            margin-bottom: 0 !important;
+
+        }
+
+        .resultBoxNy {
+            border: 1px solid rgba(0, 0, 0, .1);
+            border-radius: 12px !important;
+            overflow: hidden;
+        }
+
+        .table tr:first-child td {
+            border-top: 0 !important;
+        }
+
+        .tabledatafooter {
+            background-color: rgba(241, 244, 247, .6);
+            padding: 16px !important;
+        }
+
+        .file-info i {
+            color: #b2b2b2 !important;
+            font-size: 12px;
+        }
+
+        .fa-regular {
+            color: #b2b2b2 !important;
+        }
+
+        span.size {
+            font-size: 14px;
+            color: rgba(0, 0, 0, .3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1 class="text-center">Image Converter</h1>
+                <p class="gt mb-0">Convert your image with this free online image converter</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 text-center mt-3">
+                <select id="formatSelect" class="form-control d-inline-block w-auto mb-3">
+                    <option value="jpg">JPG</option>
+                    <option value="png">PNG</option>
+                    <option value="webp">WEBP</option>
+                    <option value="bmp">BMP</option>
+                    <option value="heic">HEIC</option>
+                    <option value="ico">ICO</option>
+                    <option value="tiff">TIFF</option>
+                    <option value="avif">AVIF</option>
+                    <option value="psd">PSD</option>
+                    <option value="raw">RAW</option>
+                    <option value="tga">TGA</option>
+                    <option value="gif">GIF</option>
+                    <option value="pict">PICT</option>
+                    <option value="hdr">HDR</option>
+                    <option value="jp2">JP2</option>
+                    <option value="pbm">PBM</option>
+                </select>
+                <button class="btn btn-primary upload-file" onclick="selectFile()" data-event="ev" data-category="Page"
+                    data-action="Upload Files" data-label="Upload Files">
+                    <i class="fa-solid fa-cloud-arrow-up" style="color: #fafafa"></i> Upload Files
+                </button>
+                <button class="btn btn-danger ml-4" id="reload-button" style="display: none;" data-event="ev"
+                    data-category="Page" data-action="CLEAR QUEUE" data-label="CLEAR QUEUE">
+                    <i class="fa-regular fa-circle-xmark" style="color: #ffffff"></i> CLEAR QUEUE
+                </button>
+                <button id="download-link" class="btn btn-success mt-3" onclick="downloadAllZIP()"
+                    style="display: none;">
+                    <i class="fa-solid fa-download" style="color: #f7f7f7"></i> Download All
+                </button>
+            </div>
+            <div class="col-md-12 mt-3">
+                <input type="file" id="imageInput" accept="image/*,.heic,.raw,.psd,.tga,.pict,.hdr,.jp2,.pbm" multiple
+                    class="d-none">
+                <div id="output-container" class="mt-4 table-responsive" style="display: none;">
+
+                    <div class="resultBoxNy">
+
+                        <div class="tabledata">
+                            <table id="result-table" class="table">
+                                <tbody id="previewTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="tabledatafooter">
+
+                            <div class="d-flex justify-content-between">
+                                <div class="flexdiv">
+                                    <button onclick="selectFile()">Add files</button>
+                                </div>
+                                <div class="flexdiv">
+                                    <button onclick="downloadAllZIP()">Download All</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div id="loader" class="loader"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://imgtype.com/wp-content/themes/generatepress/assets/new/jszip.min.js"></script>
+
+    <script>
+        let zip = new JSZip();
+        let isDownloading = false;
+        let imageCount = 0;
+
+        function selectFile() {
+            document.getElementById("imageInput").click();
+        }
+
+        var input = document.getElementById("imageInput");
+        input.addEventListener("change", function () {
+            convertToSelectedFormat();
+        });
+
+        var reloadButton = document.getElementById("reload-button");
+        reloadButton.addEventListener("click", function () {
+            location.reload();
+        });
+
+        function convertToSelectedFormat() {
+            const input = document.getElementById('imageInput');
+            const previewTableBody = document.getElementById('previewTableBody');
+            const downloadAllButton = document.getElementById('download-link');
+            const reloadButton = document.getElementById('reload-button');
+            const outputContainer = document.getElementById('output-container');
+            const selectedFormat = document.getElementById('formatSelect').value;
+
+            const files = input.files;
+
+            reloadButton.style.display = 'inline-block';
+            outputContainer.style.display = "block";
+            var loader = document.getElementById("loader");
+            loader.style.display = "block";
+
+            if (files.length > 0) {
+                downloadAllButton.style.display = 'none';
+                const promises = [];
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+
+                    promises.push(new Promise((resolve) => {
+                        reader.onload = function (event) {
+                            imageCount++;
+                            const currentImageCount = imageCount;
+
+                            const img = new Image();
+
+                            img.onload = function () {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = img.width;
+                                canvas.height = img.height;
+
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0);
+
+                                canvas.toBlob((blob) => {
+                                    zip.file(`${file.name.replace(/\.[^/.]+$/, '')}_${Date.now()}.${selectedFormat}`, blob);
+                                    const previewImg = document.createElement('img');
+                                    previewImg.src = URL.createObjectURL(blob);
+                                    previewImg.alt = 'Preview';
+                                    previewImg.classList.add('preview-image');
+
+                                    const downloadAnchor = document.createElement('a');
+                                    downloadAnchor.href = URL.createObjectURL(blob);
+                                    downloadAnchor.download = `${file.name.replace(/\.[^/.]+$/, '')}_${Date.now()}.${selectedFormat}`;
+                                    downloadAnchor.innerHTML = '<i class="fa-solid fa-download"></i> Download';
+                                    downloadAnchor.classList.add('btn', 'image-link', 'btn-success', 'download-image', 'btn-sm');
+
+                                    const originalSizeSpan = document.createElement('span');
+                                    originalSizeSpan.innerText = formatFileSize(file.size);
+
+                                    const convertedSizeSpan = document.createElement('span');
+                                    convertedSizeSpan.innerText = formatFileSize(blob.size);
+                                    convertedSizeSpan.classList.add('size');
+
+                                    const imageSize = document.createElement('span');
+                                    imageSize.innerText = `${img.width}x${img.height}`;
+
+                                    // Truncate the file name if it's longer than 20 characters
+                                    const fileName = file.name.length > 15 ? file.name.substring(0, 17) + ".." + file.name.split('.').pop() : file.name;
+
+                                    const tableRow = document.createElement('tr');
+                                    const indexCell = document.createElement('td');
+                                    const fileNameCell = document.createElement('td');
+                                    const previewCell = document.createElement('td');
+                                    const imagesizeCell = document.createElement('td');
+                                    const originalSizeCell = document.createElement('td');
+                                    const convertedSizeCell = document.createElement('td');
+                                    const downloadCell = document.createElement('td');
+
+                                    const infoDropdown = document.createElement('div');
+                                    infoDropdown.classList.add('info-dropdown');
+                                    infoDropdown.innerHTML = `
+                                        <p><strong>Preview:</strong></p>
+                                        <img src="${URL.createObjectURL(blob)}" alt="Preview">
+                                        <p><strong>Converted Size:</strong> ${formatFileSize(blob.size)}</p>
+                                        <p><strong>Image Size:</strong> ${img.width}x${img.height}</p>
+                                    `;
+
+                                    const fileInfo = document.createElement('div');
+                                    fileInfo.classList.add('file-info');
+                                    fileInfo.innerHTML = `<i class="fa-solid fa-circle-info"></i>`;
+                                    fileInfo.appendChild(infoDropdown);
+
+                                    indexCell.innerHTML = '<i class="fa-regular fa-file-image"></i>';
+                                    fileNameCell.innerHTML = `${fileName} ${fileInfo.outerHTML}`;
+                                    fileNameCell.classList.add('truncate');
+
+                                    downloadCell.classList.add('downloadcta');
+
+                                    previewCell.appendChild(previewImg);
+                                    imagesizeCell.appendChild(imageSize);
+                                    originalSizeCell.appendChild(originalSizeSpan);
+                                    convertedSizeCell.appendChild(convertedSizeSpan);
+                                    downloadCell.appendChild(downloadAnchor);
+
+                                    tableRow.appendChild(indexCell);
+                                    tableRow.appendChild(fileNameCell);
+                                    // tableRow.appendChild(previewCell);
+                                    tableRow.appendChild(convertedSizeCell);
+                                    tableRow.appendChild(downloadCell);
+
+                                    previewTableBody.appendChild(tableRow);
+
+                                    if (i === files.length - 1) {
+                                        resolve('last');
+                                    } else {
+                                        resolve();
+                                    }
+                                }, `image/${selectedFormat}`);
+                            };
+
+                            img.src = event.target.result;
+                        };
+
+                        reader.readAsDataURL(file);
+                    }));
+                }
+
+                Promise.all(promises).then((values) => {
+                    if (values.includes('last')) {
+                        downloadAllButton.style.display = 'inline-block';
+                    }
+                });
+
+                var loader = document.getElementById("loader");
+                loader.style.display = "none";
+            } else {
+                alert('Please select image files.');
+            }
+        }
+
+        function downloadAllZIP() {
+            if (!isDownloading) {
+                isDownloading = true;
+                zip.generateAsync({ type: 'blob' }).then((content) => {
+                    const url = URL.createObjectURL(content);
+
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `imgtype_converted_images.zip`;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    isDownloading = false;
+                });
+            }
+        }
+
+        function formatFileSize(size) {
+            var units = ["B", "KB", "MB", "GB", "TB"];
+            var i = 0;
+            while (size >= 1024 && i < units.length - 1) {
+                size /= 1024;
+                i++;
+            }
+            return size.toFixed(2) + " " + units[i];
+        }
+    </script>
+</body>
+
+</html>
